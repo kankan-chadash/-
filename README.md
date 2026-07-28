@@ -25,7 +25,7 @@ client/   React admin panel + public viewer
 ## Data model
 
 - **Page**: `tractate`, `daf`, `side` (`a`/`b`), `pageImageUrl`, optional natural image dimensions.
-- **Video**: a standalone shiur shown on the `/videos` rail — `title`, optional `description`,
+- **Video**: a standalone educational video shown on the `/videos` rail — `title`, optional `description`,
   `url` (YouTube/Vimeo), `sortOrder`. Unlike a region's video, it isn't attached to any daf.
 - **Region** (belongs to a page): `shape` (`rectangle` | `polygon`), `coordinates` stored as
   **percentages** of image width/height (not pixels) so hotspots stay aligned at any screen size,
@@ -108,12 +108,17 @@ are worth knowing before editing the UI:
 
 ## Videos rail
 
-`/videos` shows standalone shiurim as plaques hanging from an aged wooden beam, scrolled
+`/videos` shows standalone educational videos as plaques hanging from an aged wooden beam, scrolled
 horizontally with snap points. Manage them at `/admin/videos` (linked from the admin dashboard):
 add, edit, reorder, delete. In `github` admin mode each change commits `client/public/data/videos.json`;
 in `express` mode they're rows in the `videos` table, exported to that same JSON by
-`npm run export:static`. YouTube posters are derived from the video id; Vimeo has no thumbnail
-without an API call, so those fall back to the site mark.
+`npm run export:static`.
+
+Posters: YouTube encodes one in the video id, so it's derived synchronously. Vimeo doesn't, so it's
+fetched from Vimeo's public oEmbed endpoint — no API key, and it sends `Access-Control-Allow-Origin: *`,
+so the browser calls it directly with no backend involved. Results are cached per video for the life
+of the page, and anything that can't be resolved (a private video, a host we don't recognise, a
+network failure) falls back to the site mark rather than an empty frame.
 
 ## Public viewer
 

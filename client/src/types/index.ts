@@ -56,7 +56,7 @@ export interface PageWithRegions extends Page {
   regions: Region[];
 }
 
-/** A standalone shiur, shown on the videos rail — not tied to any daf. */
+/** A standalone educational video, shown on the videos rail — not tied to any daf. */
 export interface Video {
   id: string;
   title: string;

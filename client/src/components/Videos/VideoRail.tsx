@@ -12,7 +12,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Video } from '../../types';
-import { toThumbnailUrl } from '../../utils/videoEmbed';
+import { useThumbnail } from '../../hooks/useThumbnail';
 import logoUrl from '../../assets/logo.png';
 import { Chevron } from '../Layout/Chevron';
 
@@ -106,7 +106,7 @@ function RailCard({
   angle: number;
   onSelect: (video: Video) => void;
 }) {
-  const thumbnail = toThumbnailUrl(video.url);
+  const thumbnail = useThumbnail(video.url);
 
   return (
     <div className="rail-slot shrink-0 pt-4" style={{ width: 'min(19rem, 78vw)' }}>

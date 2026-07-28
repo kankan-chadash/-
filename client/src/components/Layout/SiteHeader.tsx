@@ -21,7 +21,7 @@ interface SiteHeaderProps {
 
 const NAV = [
   { to: '/', label: 'הספרייה' },
-  { to: '/videos', label: 'שיעורים' },
+  { to: '/videos', label: 'סרטונים' },
 ];
 
 export function SiteHeader({ trailing }: SiteHeaderProps) {

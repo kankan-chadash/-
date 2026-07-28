@@ -86,7 +86,7 @@ function main() {
     fs.writeFileSync(path.join(PAGES_DIR, `${row.id}.json`), JSON.stringify(exported, null, 2));
   }
 
-  // Standalone shiurim (the video rail) — not tied to any daf.
+  // Standalone educational videos (the video rail) — not tied to any daf.
   const videoRows = db
     .prepare('SELECT * FROM videos ORDER BY sort_order ASC, created_at ASC')
     .all() as VideoRow[];
