@@ -7,6 +7,20 @@
   "imageWidth": 1788,
   "imageHeight": 2758,
   "createdAt": "2026-07-28T20:06:08.456Z",
-  "updatedAt": "2026-07-28T20:06:08.456Z",
-  "regions": []
+  "updatedAt": "2026-07-28T20:07:13.833Z",
+  "regions": [
+    {
+      "id": "27149833-fe86-45f9-89c9-38678a87f526",
+      "shape": "rectangle",
+      "coordinates": {
+        "x": 38.93759890509388,
+        "y": 9.40524053791765,
+        "width": 26.96206321372054,
+        "height": 16.769721336475804
+      },
+      "contentType": "video",
+      "content": "https://vimeo.com/1211656238?fl=pl&fe=sh",
+      "title": "סרטון על המשנה"
+    }
+  ]
 }
