@@ -12,6 +12,7 @@
  */
 import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { GithubAdminAuthProvider } from './context/GithubAdminAuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ViewerHome } from './pages/ViewerHome';
 import { ViewerPage } from './pages/ViewerPage';
@@ -23,27 +24,29 @@ export default function App() {
   return (
     <HashRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/" element={<ViewerHome />} />
-          <Route path="/view/:pageId" element={<ViewerPage />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/pages/:pageId"
-            element={
-              <ProtectedRoute>
-                <AdminPageEditor />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        <GithubAdminAuthProvider>
+          <Routes>
+            <Route path="/" element={<ViewerHome />} />
+            <Route path="/view/:pageId" element={<ViewerPage />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/pages/:pageId"
+              element={
+                <ProtectedRoute>
+                  <AdminPageEditor />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </GithubAdminAuthProvider>
       </AuthProvider>
     </HashRouter>
   );

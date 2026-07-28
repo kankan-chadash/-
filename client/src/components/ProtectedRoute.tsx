@@ -13,16 +13,22 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useGithubAdminAuth } from '../context/GithubAdminAuthContext';
+import { isGithubAdminMode } from '../api/adminData';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { username, isLoading } = useAuth();
+  const expressAuth = useAuth();
+  const githubAuth = useGithubAdminAuth();
   const location = useLocation();
+
+  const isLoading = isGithubAdminMode ? githubAuth.isLoading : expressAuth.isLoading;
+  const isAuthenticated = isGithubAdminMode ? !!githubAuth.token : !!expressAuth.username;
 
   if (isLoading) {
     return <div className="min-h-screen bg-wood" />;
   }
 
-  if (!username) {
+  if (!isAuthenticated) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 

@@ -13,12 +13,17 @@
 import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import * as api from '../../api/client';
 import type { Page } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { useGithubAdminAuth } from '../../context/GithubAdminAuthContext';
+import { isGithubAdminMode, useAdminApi } from '../../api/adminData';
 
 export function AdminDashboard() {
-  const { username, logout } = useAuth();
+  const expressAuth = useAuth();
+  const githubAuth = useGithubAdminAuth();
+  const username = isGithubAdminMode ? githubAuth.username : expressAuth.username;
+  const signOut = isGithubAdminMode ? githubAuth.signOut : expressAuth.logout;
+  const api = useAdminApi();
   const navigate = useNavigate();
   const [pages, setPages] = useState<Page[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +38,8 @@ export function AdminDashboard() {
     api.fetchAdminPages().then(setPages).catch((err) => setError(err.message));
   }
 
-  useEffect(loadPages, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(loadPages, [api]);
 
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
@@ -54,7 +60,10 @@ export function AdminDashboard() {
         imageWidth: dimensions.width,
         imageHeight: dimensions.height,
       });
-      navigate(`/admin/pages/${page.id}`);
+      // In GitHub-commit mode the uploaded image isn't fetchable from its real
+      // URL until the next Pages deploy finishes (~1-2 min). Pass a local blob
+      // URL so the editor can preview it immediately in this session.
+      navigate(`/admin/pages/${page.id}`, { state: { previewImageUrl: URL.createObjectURL(file) } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create page');
     } finally {
@@ -75,7 +84,7 @@ export function AdminDashboard() {
           <h1 className="font-serif text-2xl text-parchment">Admin — Pages</h1>
           <div className="flex items-center gap-4 text-parchment/80 text-sm">
             <span>{username}</span>
-            <button onClick={() => logout()} className="text-gold hover:underline">
+            <button onClick={() => signOut()} className="text-gold hover:underline">
               Sign out
             </button>
           </div>

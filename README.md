@@ -71,8 +71,8 @@ cd server && npm run build && npm start
 cd client && npm run build   # outputs static files to client/dist, serve with any static host
 ```
 
-To publish a read-only public viewer to GitHub Pages instead (no backend hosting required), see
-[Deploying the public viewer to GitHub Pages](#deploying-the-public-viewer-to-github-pages) below.
+To publish this to GitHub Pages instead (no backend hosting required, admin editing optionally
+included — see below), see [Deploying to GitHub Pages](#deploying-to-github-pages).
 
 ## Admin workflow
 
@@ -100,12 +100,60 @@ recomputes percentages/viewBox scaling as part of normal layout. Regions are inv
 hovered (a thin gold outline + subtle fill), and clicking one opens a modal with the matching
 video/image/text content.
 
-## Deploying the public viewer to GitHub Pages
+## Deploying to GitHub Pages
 
-GitHub Pages only serves static files — it can't run the Express/SQLite backend, so there is no
-live admin editing on the deployed site. Instead, content is authored locally (where the real
-backend and auth run) and then **exported** to static JSON that gets built into a read-only
-viewer:
+GitHub Pages only serves static files — it can't run the Express/SQLite backend. There are two
+ways to publish the public viewer there; both use the same `npm run build:pages` / GitHub Actions
+mechanics, they just differ in **how admin editing works once it's deployed**.
+
+**One-time setup either way**, in the repo's GitHub settings: **Settings → Pages → Source → GitHub
+Actions**. (The workflow at `.github/workflows/deploy-pages.yml` handles the rest, and is what
+actually publishes `client/dist` after building it with `npm run build:pages`.)
+
+### Option A — Fully GitHub-native admin (the default, `VITE_ADMIN_MODE=github` in `client/.env.pages`)
+
+The admin panel itself runs as static JS on GitHub Pages, with **no backend at all**: every
+"save" is a real git commit, made straight from your browser via the GitHub REST API, using a
+personal access token you paste in once at `/admin/login`. There is no username/password — the
+token *is* the credential. This means:
+
+```mermaid
+flowchart LR
+  A["Admin UI on GitHub Pages\n(/admin/login)"] -- "your personal access token" --> B[GitHub REST API]
+  B --> C["commit straight to the repo\n(client/public/data/**)"]
+  C --> D[GitHub Actions rebuild]
+  D --> E["GitHub Pages\n(viewer + admin, both live)"]
+```
+
+**Setup:**
+1. Create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new)
+   scoped to **only this repository**, with **Contents: Read and write** permission and nothing else.
+2. Push this repo to `main` once (so the workflow runs and Pages goes live).
+3. Open `https://<owner>.github.io/<repo>/#/admin/login`, paste the token in, and use the admin
+   panel exactly like the local one — create pages, draw regions, save. Every save commits directly
+   to `main` and triggers a fresh Pages deploy (**allow ~1 minute** for a change to actually show up
+   on the live site; a just-uploaded page image previews locally in that same browser tab in the
+   meantime, but won't be reachable at its real URL — e.g. in a second tab, or after a reload —
+   until that deploy finishes).
+
+**Security, read this before using it:**
+- Anyone with the URL can *open* `/admin/login` (GitHub Pages can't restrict who can load a page
+  unless you're on GitHub Enterprise) — but without your token, they can't do anything: every
+  write goes through GitHub's own auth, so an invalid/foreign token is simply rejected by GitHub,
+  not by this app.
+- The token is your website's admin password. Scope it to this one repo only, with only
+  `Contents: read and write`, and treat it like any other secret. It's stored in this browser's
+  `localStorage` — never sent anywhere except `api.github.com` — but that also means anyone with
+  access to that browser/profile has it. Don't sign in on a shared or public computer, and revoke
+  the token from GitHub's settings if you ever suspect it leaked.
+- Set `VITE_ADMIN_MODE=express` in `client/.env.pages` instead (see Option B) if you'd rather not
+  have a functioning admin panel reachable at a public URL at all.
+
+### Option B — Read-only viewer, admin stays local (`VITE_ADMIN_MODE=express`)
+
+Set `VITE_ADMIN_MODE=express` in `client/.env.pages` (or delete that line — it's the fallback) to
+ship a GitHub Pages build whose `/admin` login form isn't backed by anything. Content is instead
+authored against the real local backend and **exported** to static JSON:
 
 ```mermaid
 flowchart LR
@@ -116,11 +164,6 @@ flowchart LR
   E --> F[GitHub Actions build]
   F --> G[GitHub Pages\nread-only viewer]
 ```
-
-**One-time setup**, in the repo's GitHub settings: **Settings → Pages → Source → GitHub Actions**.
-(The workflow at `.github/workflows/deploy-pages.yml` handles the rest.)
-
-**Whenever you add/change content:**
 
 ```bash
 # 1. Run the real backend + admin panel locally and edit pages/regions as usual
@@ -138,27 +181,40 @@ git commit -m "Update published pages"
 git push origin main
 ```
 
-Pushing to `main` triggers the GitHub Actions workflow, which runs `npm run build:pages` (a Vite
-build with relative asset paths and `VITE_DATA_MODE=static`, so the viewer reads the exported JSON
-instead of calling `/api`) and publishes `client/dist` to GitHub Pages. The site will be available
-at `https://<owner>.github.io/<repo>/`.
+Either option: pushing to `main` triggers the GitHub Actions workflow, which runs
+`npm run build:pages` (relative asset paths, `VITE_DATA_MODE=static` so the viewer reads exported/
+committed JSON instead of calling `/api`) and publishes `client/dist` to GitHub Pages, live at
+`https://<owner>.github.io/<repo>/`.
 
-Locally, `npm run dev` and the regular `npm run build` are unaffected — they keep talking to the
-live backend, so the admin panel and backend-driven workflow described above work exactly as
-before; only `npm run build:pages` switches to static data.
+Locally, `npm run dev` and the regular `npm run build` are unaffected either way — they keep
+talking to the live Express backend; only `npm run build:pages` switches modes.
 
 ## Auth
 
+This app has two independent, mutually exclusive admin backends, selected at build time by
+`VITE_ADMIN_MODE` (default `express` for `npm run build`/`npm run dev`; see the GitHub Pages
+section above for the `github` mode used by `client/.env.pages`).
+
+**`express` mode** (local dev, or any self-hosted deployment with the Express backend running):
 - Passwords are hashed with bcrypt (`bcryptjs`) — 12 salt rounds.
 - Sessions are JWTs (12h expiry) stored in an `httpOnly`, `sameSite=lax` cookie — never exposed to
   client-side JS.
 - `requireAdmin` middleware protects every `/api/admin/*` route (page/region CRUD, image upload);
   public `/api/pages*` routes remain open.
-- The React admin routes are wrapped in `<ProtectedRoute>`, which redirects unauthenticated visitors
-  to `/admin/login`.
 - Single admin account, seeded from `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars on first boot. To
   rotate the password later, update the env vars and run `npm run seed:admin` from `server/`
   (upserts the admin row).
+
+**`github` mode** (GitHub Pages with a live admin panel, see Option A above):
+- There's no username/password or session — the credential is a GitHub personal access token,
+  validated directly against the GitHub API (`checkRepoAccess` in `client/src/api/githubApi.ts`
+  confirms the token can push to this repo) and stored client-side only (`localStorage`).
+- Every admin write (`client/src/api/githubAdminClient.ts`) is a real commit via the GitHub
+  Contents API — pages/regions live in `client/public/data/**` as JSON, with no database at all.
+
+Both modes share `<ProtectedRoute>` (redirects unauthenticated visitors to `/admin/login`) and the
+same admin UI components (`AdminDashboard`, `AdminPageEditor`, `RegionForm`, ...) — only the data
+layer (`client/src/api/adminData.ts`) and the login form differ.
 
 ## Known trade-offs / notes for reviewers
 

@@ -14,6 +14,11 @@
 
 interface ImportMetaEnv {
   readonly VITE_DATA_MODE?: 'api' | 'static';
+  readonly VITE_ADMIN_MODE?: 'express' | 'github';
+  readonly VITE_GITHUB_OWNER?: string;
+  readonly VITE_GITHUB_REPO?: string;
+  readonly VITE_GITHUB_BRANCH?: string;
+  readonly VITE_GITHUB_API_BASE?: string;
 }
 
 interface ImportMeta {

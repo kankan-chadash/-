@@ -11,8 +11,8 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import * as api from '../../api/client';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { isGithubAdminMode, useAdminApi } from '../../api/adminData';
 import type { PageWithRegions } from '../../types';
 import { DrawingCanvas } from '../../components/Editor/DrawingCanvas';
 import type { EditorMode } from '../../components/Editor/DrawingCanvas';
@@ -22,6 +22,9 @@ import { RegionList } from '../../components/Editor/RegionList';
 
 export function AdminPageEditor() {
   const { pageId } = useParams<{ pageId: string }>();
+  const location = useLocation() as { state?: { previewImageUrl?: string } };
+  const previewImageUrl = location.state?.previewImageUrl;
+  const api = useAdminApi();
   const [page, setPage] = useState<PageWithRegions | null>(null);
   const [regions, setRegions] = useState<EditableRegion[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -38,7 +41,8 @@ export function AdminPageEditor() {
         setRegions(p.regions.map((r) => ({ ...r })));
       })
       .catch((err) => setError(err.message));
-  }, [pageId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageId, api]);
 
   const selectedRegion = regions.find((r) => r.id === selectedId) ?? null;
 
@@ -103,6 +107,13 @@ export function AdminPageEditor() {
 
       <main className="mx-auto max-w-6xl px-4 py-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section>
+          {previewImageUrl && isGithubAdminMode && (
+            <p className="mb-3 text-xs text-parchment/70">
+              Showing a local preview of the image you just uploaded — it'll be live at its real
+              address after the next GitHub Pages deploy finishes (about a minute). If you reload
+              this page before then, the image won't display until it does.
+            </p>
+          )}
           <div className="mb-3 flex gap-2">
             {(['select', 'rectangle', 'polygon'] as EditorMode[]).map((m) => (
               <button
@@ -128,7 +139,7 @@ export function AdminPageEditor() {
           <div className="bg-parchment rounded shadow-2xl border-t-4 border-gold overflow-hidden">
             {page && (
               <DrawingCanvas
-                imageUrl={page.pageImageUrl}
+                imageUrl={previewImageUrl ?? page.pageImageUrl}
                 regions={regions}
                 selectedId={selectedId}
                 mode={mode}
