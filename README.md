@@ -25,7 +25,7 @@ client/   React admin panel + public viewer
 ## Data model
 
 - **Page**: `tractate`, `daf`, `side` (`a`/`b`), `pageImageUrl`, optional natural image dimensions.
-- **Video**: a standalone shiur shown on the `/videos` rail — `title`, optional `description`,
+- **Video**: a standalone educational video shown on the `/videos` rail — `title`, optional `description`,
   `url` (YouTube/Vimeo), `sortOrder`. Unlike a region's video, it isn't attached to any daf.
 - **Region** (belongs to a page): `shape` (`rectangle` | `polygon`), `coordinates` stored as
   **percentages** of image width/height (not pixels) so hotspots stay aligned at any screen size,
@@ -108,7 +108,7 @@ are worth knowing before editing the UI:
 
 ## Videos rail
 
-`/videos` shows standalone shiurim as plaques hanging from an aged wooden beam, scrolled
+`/videos` shows standalone educational videos as plaques hanging from an aged wooden beam, scrolled
 horizontally with snap points. Manage them at `/admin/videos` (linked from the admin dashboard):
 add, edit, reorder, delete. In `github` admin mode each change commits `client/public/data/videos.json`;
 in `express` mode they're rows in the `videos` table, exported to that same JSON by

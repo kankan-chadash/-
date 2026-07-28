@@ -195,7 +195,7 @@ export async function createVideo(token: string, input: VideoInput): Promise<Vid
 export async function updateVideo(token: string, id: string, input: Partial<VideoInput>): Promise<Video> {
   const { videos, sha } = await readVideos(token);
   const existing = videos.find((v) => v.id === id);
-  if (!existing) throw new Error('השיעור לא נמצא');
+  if (!existing) throw new Error('הסרטון לא נמצא');
   const updated: Video = {
     ...existing,
     title: input.title ?? existing.title,

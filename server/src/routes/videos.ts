@@ -18,7 +18,7 @@ import { VideoRow } from '../types';
 import { videoInputSchema, videoUpdateSchema } from '../validation';
 import { requireAdmin } from '../middleware/auth';
 
-// Standalone shiurim — videos that belong to the site as a whole rather than to
+// Standalone educational videos — videos that belong to the site as a whole rather than to
 // a hotspot on a particular daf (those live on the region, see routes/pages.ts).
 
 export const publicVideosRouter = Router();
@@ -45,7 +45,7 @@ adminVideosRouter.post('/videos', (req, res) => {
   }
   const { title, description, url, sortOrder } = parsed.data;
   const id = uuid();
-  // Default to the end of the rail so a new shiur doesn't jump the queue.
+  // Default to the end of the rail so a new video doesn't jump the queue.
   const nextOrder =
     sortOrder ??
     ((db.prepare('SELECT MAX(sort_order) AS max FROM videos').get() as { max: number | null }).max ?? -1) + 1;

@@ -59,6 +59,6 @@ export async function fetchPage(id: string): Promise<PageWithRegions> {
 export async function fetchVideos(): Promise<Video[]> {
   const res = await fetch(`${BASE}data/videos.json`);
   if (res.status === 404) return [];
-  if (!res.ok) throw new Error('טעינת השיעורים נכשלה');
+  if (!res.ok) throw new Error('טעינת הסרטונים נכשלה');
   return (await res.json()) as Video[];
 }

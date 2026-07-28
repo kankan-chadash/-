@@ -84,7 +84,7 @@ export function AdminDashboard() {
           <h1 className="font-serif text-2xl text-parchment">ניהול — דפים</h1>
           <div className="flex items-center gap-4 text-parchment/80 text-sm">
             <Link to="/admin/videos" className="text-gold hover:underline">
-              שיעורים כלליים
+              סרטונים חינוכיים
             </Link>
             <span>{username}</span>
             <button onClick={() => signOut()} className="text-gold hover:underline">

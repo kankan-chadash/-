@@ -61,7 +61,7 @@ export function AdminVideos() {
       resetForm();
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'שמירת השיעור נכשלה');
+      setError(err instanceof Error ? err.message : 'שמירת הסרטון נכשלה');
     } finally {
       setBusy(false);
     }
@@ -75,7 +75,7 @@ export function AdminVideos() {
       if (editing?.id === video.id) resetForm();
       load();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'מחיקת השיעור נכשלה');
+      setError(err instanceof Error ? err.message : 'מחיקת הסרטון נכשלה');
     }
   }
 
@@ -103,7 +103,7 @@ export function AdminVideos() {
     <div className="surface-wood min-h-screen">
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
-          <h1 className="font-serif text-2xl text-parchment">ניהול — שיעורים כלליים</h1>
+          <h1 className="font-serif text-2xl text-parchment">ניהול — סרטונים חינוכיים</h1>
           <Link to="/admin" className="text-sm text-gold hover:underline">
             → חזרה לדפים
           </Link>
@@ -113,7 +113,7 @@ export function AdminVideos() {
       <main className="mx-auto grid max-w-5xl gap-8 px-6 py-10 md:grid-cols-[1fr_1.4fr]">
         <section className="h-fit rounded border-t-4 border-gold bg-parchment p-6 shadow-lg">
           <h2 className="mb-4 font-serif text-xl text-wood-dark">
-            {editing ? 'עריכת שיעור' : 'שיעור חדש'}
+            {editing ? 'עריכת סרטון' : 'סרטון חדש'}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
@@ -122,7 +122,7 @@ export function AdminVideos() {
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="שיעור פתיחה למסכת"
+                placeholder="סרטון פתיחה למסכת"
                 className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
               />
             </label>
@@ -145,7 +145,7 @@ export function AdminVideos() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                placeholder="על מה השיעור"
+                placeholder="על מה הסרטון"
                 className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
               />
             </label>
@@ -175,9 +175,9 @@ export function AdminVideos() {
 
         <section className="rounded border-t-4 border-gold bg-parchment p-6 shadow-lg">
           <h2 className="mb-4 font-serif text-xl text-wood-dark">
-            השיעורים במסילה ({videos.length})
+            הסרטונים במסילה ({videos.length})
           </h2>
-          {videos.length === 0 && <p className="text-sm text-ink-variant">עדיין אין שיעורים.</p>}
+          {videos.length === 0 && <p className="text-sm text-ink-variant">עדיין אין סרטונים.</p>}
           <ul className="divide-y divide-outline/40">
             {videos.map((video, i) => {
               const thumbnail = toThumbnailUrl(video.url);

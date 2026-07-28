@@ -35,15 +35,15 @@ export function VideosPage() {
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl text-parchment sm:text-5xl">שיעורים כלליים</h1>
+          <h1 className="font-serif text-4xl text-parchment sm:text-5xl">סרטונים חינוכיים</h1>
           <p className="mx-auto mt-3 max-w-xl text-parchment/70">
-            מסילת השיעורים — בחרו שיעור כדי לצפות בו.
+            מסילת הסרטונים — בחרו סרטון כדי לצפות בו.
           </p>
         </div>
 
         {error && (
           <p className="rounded border border-red-400/40 bg-red-950/40 p-4 text-center text-red-200">
-            טעינת השיעורים נכשלה: {error}
+            טעינת הסרטונים נכשלה: {error}
           </p>
         )}
 
@@ -51,7 +51,7 @@ export function VideosPage() {
 
         {videos && videos.length === 0 && (
           <p className="rounded border border-gold/30 bg-black/20 p-10 text-center text-parchment/80">
-            המסילה עדיין ריקה — לא הועלו שיעורים כלליים.
+            המסילה עדיין ריקה — לא הועלו סרטונים חינוכיים.
           </p>
         )}
 

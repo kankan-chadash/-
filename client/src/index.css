@@ -220,7 +220,7 @@ polygon.hotspot-region.is-active {
 
 /* --- The video rail ------------------------------------------------------- */
 
-/* An aged beam the shiur plaques hang from. */
+/* An aged beam the video plaques hang from. */
 .rail-beam {
   background-color: #43281f;
   background-image:
@@ -253,7 +253,7 @@ polygon.hotspot-region.is-active {
     0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Each shiur is a plaque hanging off the beam. */
+/* Each video is a plaque hanging off the beam. */
 .rail-card {
   transform-style: preserve-3d;
   transition:
