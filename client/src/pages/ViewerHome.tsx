@@ -12,7 +12,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import * as api from '../api/client';
+import * as api from '../api/publicData';
 import type { Page } from '../types';
 
 export function ViewerHome() {

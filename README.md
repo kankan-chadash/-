@@ -71,6 +71,9 @@ cd server && npm run build && npm start
 cd client && npm run build   # outputs static files to client/dist, serve with any static host
 ```
 
+To publish a read-only public viewer to GitHub Pages instead (no backend hosting required), see
+[Deploying the public viewer to GitHub Pages](#deploying-the-public-viewer-to-github-pages) below.
+
 ## Admin workflow
 
 1. **Admin → New Page**: enter tractate/daf/side and upload the scanned page image.
@@ -97,6 +100,53 @@ recomputes percentages/viewBox scaling as part of normal layout. Regions are inv
 hovered (a thin gold outline + subtle fill), and clicking one opens a modal with the matching
 video/image/text content.
 
+## Deploying the public viewer to GitHub Pages
+
+GitHub Pages only serves static files — it can't run the Express/SQLite backend, so there is no
+live admin editing on the deployed site. Instead, content is authored locally (where the real
+backend and auth run) and then **exported** to static JSON that gets built into a read-only
+viewer:
+
+```mermaid
+flowchart LR
+  A[Run admin panel locally] --> B[Create/edit pages & regions]
+  B --> C["npm run export:static (server/)"]
+  C --> D[JSON + images written to\nclient/public/data/**]
+  D --> E[git commit + push to main]
+  E --> F[GitHub Actions build]
+  F --> G[GitHub Pages\nread-only viewer]
+```
+
+**One-time setup**, in the repo's GitHub settings: **Settings → Pages → Source → GitHub Actions**.
+(The workflow at `.github/workflows/deploy-pages.yml` handles the rest.)
+
+**Whenever you add/change content:**
+
+```bash
+# 1. Run the real backend + admin panel locally and edit pages/regions as usual
+cd server && npm run dev
+cd client && npm run dev   # http://localhost:5173/admin
+
+# 2. Export the current database + uploaded images to static JSON
+cd server && npm run export:static
+# -> writes client/public/data/pages.json, client/public/data/pages/<id>.json,
+#    and copies any /uploads/* images the regions/pages reference
+
+# 3. Commit the exported data and push to main
+git add client/public/data
+git commit -m "Update published pages"
+git push origin main
+```
+
+Pushing to `main` triggers the GitHub Actions workflow, which runs `npm run build:pages` (a Vite
+build with relative asset paths and `VITE_DATA_MODE=static`, so the viewer reads the exported JSON
+instead of calling `/api`) and publishes `client/dist` to GitHub Pages. The site will be available
+at `https://<owner>.github.io/<repo>/`.
+
+Locally, `npm run dev` and the regular `npm run build` are unaffected — they keep talking to the
+live backend, so the admin panel and backend-driven workflow described above work exactly as
+before; only `npm run build:pages` switches to static data.
+
 ## Auth
 
 - Passwords are hashed with bcrypt (`bcryptjs`) — 12 salt rounds.
@@ -114,9 +164,13 @@ video/image/text content.
 
 - `react-router-dom` currently ships one open npm advisory (a CSRF bypass scoped to React Router's
   RSC/Server-Components "framework mode"). This project is a plain client-rendered SPA
-  (`BrowserRouter`) and never uses that mode, so the advisory doesn't apply to this app's actual
+  (`HashRouter`) and never uses that mode, so the advisory doesn't apply to this app's actual
   usage — but `npm audit` in `client/` will still flag it. Downgrading reintroduces ~13 other,
   more serious, previously-patched high-severity issues (XSS, RCE, DoS, open-redirect), so staying
   on latest was the deliberate choice here (see conversation for the full trade-off).
+- Routing uses `HashRouter` (URLs like `/#/view/<id>`) rather than `BrowserRouter`, specifically so
+  the GitHub Pages deployment below works with zero server-side rewrite configuration — GitHub
+  Pages can't do SPA fallback routing, but a hash fragment never leaves the browser, so every route
+  always resolves to the same `index.html`.
 - Region content for `contentType: 'text'` is rendered with `dangerouslySetInnerHTML` after
   passing through `DOMPurify.sanitize()`, since admins can enter raw HTML.

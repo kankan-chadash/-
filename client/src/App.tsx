@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ViewerHome } from './pages/ViewerHome';
@@ -21,7 +21,7 @@ import { AdminPageEditor } from './pages/admin/AdminPageEditor';
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <Routes>
           <Route path="/" element={<ViewerHome />} />
@@ -45,6 +45,6 @@ export default function App() {
           />
         </Routes>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   );
 }

@@ -28,6 +28,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // In static (GitHub Pages) builds there is no backend at all, so skip the
+    // network round-trip entirely instead of letting it fail on every page view.
+    if (import.meta.env.VITE_DATA_MODE === 'static') {
+      setIsLoading(false);
+      return;
+    }
     api
       .fetchMe()
       .then((me) => setUsername(me.username))

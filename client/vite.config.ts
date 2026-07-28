@@ -15,7 +15,10 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // 'pages' mode builds a relocatable bundle (relative asset paths) for GitHub Pages,
+  // which is served from a project subpath rather than the domain root.
+  base: mode === 'pages' ? './' : '/',
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
@@ -23,4 +26,4 @@ export default defineConfig({
       '/uploads': 'http://localhost:4000',
     },
   },
-})
+}))

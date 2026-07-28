@@ -12,7 +12,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import * as api from '../api/client';
+import * as api from '../api/publicData';
 import type { PageWithRegions, Region } from '../types';
 import { HotspotOverlay } from '../components/Overlay/HotspotOverlay';
 import { ContentModal } from '../components/Modal/ContentModal';
