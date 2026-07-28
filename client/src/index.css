@@ -1,0 +1,56 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: 'EB Garamond', Georgia, serif;
+  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+
+  --color-wood: #4e342e;
+  --color-wood-dark: #361f1a;
+  --color-parchment: #fff8f6;
+  --color-parchment-dim: #ffe9e3;
+  --color-parchment-container: #fff1ec;
+  --color-gold: #d4af37;
+  --color-gold-dim: #e9c349;
+  --color-ink: #2e150b;
+  --color-ink-variant: #504442;
+  --color-outline: #d4c3bf;
+}
+
+body {
+  margin: 0;
+  background: var(--color-wood);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+}
+
+div.hotspot-region {
+  position: absolute;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+div.hotspot-region:hover,
+div.hotspot-region.is-active {
+  border-color: rgba(212, 175, 55, 0.85);
+  background-color: rgba(212, 175, 55, 0.14);
+}
+
+polygon.hotspot-region {
+  cursor: pointer;
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1px;
+  pointer-events: auto;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+polygon.hotspot-region:hover,
+polygon.hotspot-region.is-active {
+  fill: rgba(212, 175, 55, 0.14);
+  stroke: rgba(212, 175, 55, 0.85);
+}
