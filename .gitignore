@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+.env
+*.log
+
+# server
+server/uploads/*
+!server/uploads/.gitkeep
+server/data/*.sqlite
+server/data/*.sqlite-journal
+
+# client
+client/dist/
+
+# misc
+.DS_Store
