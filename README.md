@@ -25,6 +25,8 @@ client/   React admin panel + public viewer
 ## Data model
 
 - **Page**: `tractate`, `daf`, `side` (`a`/`b`), `pageImageUrl`, optional natural image dimensions.
+- **Video**: a standalone shiur shown on the `/videos` rail — `title`, optional `description`,
+  `url` (YouTube/Vimeo), `sortOrder`. Unlike a region's video, it isn't attached to any daf.
 - **Region** (belongs to a page): `shape` (`rectangle` | `polygon`), `coordinates` stored as
   **percentages** of image width/height (not pixels) so hotspots stay aligned at any screen size,
   `contentType` (`video` | `image` | `text`), `content`, optional `title`.
@@ -88,6 +90,30 @@ included — see below), see [Deploying to GitHub Pages](#deploying-to-github-pa
      press **Delete/Backspace** or use the "Delete region" button to remove a whole region.
 3. **Save regions** sends the full region list to the backend as JSON, with coordinates normalized
    to percentages of the original image dimensions.
+
+## Interface language
+
+The UI is Hebrew throughout, with `<html lang="he" dir="rtl">`. A few things follow from that and
+are worth knowing before editing the UI:
+
+- Use logical CSS utilities (`ms-`/`me-`, `ps-`/`pe-`, `start-`/`end-`, `text-start`/`text-end`)
+  rather than physical left/right ones, so layout stays correct in both directions.
+- Direction arrows are drawn with `<Chevron toward="start|end">`, not typed as characters. The
+  obvious glyphs (`‹ › ← →`... specifically the angle quotes) are **bidi-mirrored**, so in an RTL
+  document they silently render the opposite way and stop matching the control they sit on.
+- A tractate name is Hebrew while its daf ("54b") is Latin. Rendering them as one string lets bidi
+  reorder the pieces, so on-screen titles go through `<DafTitle>`, which isolates the name in a
+  `<bdi>`. `formatPageTitle()` remains for alt text and aria-labels, where bidi doesn't apply.
+- Arrow-key and swipe navigation in the viewer are mirrored: the *next* daf lies to the left.
+
+## Videos rail
+
+`/videos` shows standalone shiurim as plaques hanging from an aged wooden beam, scrolled
+horizontally with snap points. Manage them at `/admin/videos` (linked from the admin dashboard):
+add, edit, reorder, delete. In `github` admin mode each change commits `client/public/data/videos.json`;
+in `express` mode they're rows in the `videos` table, exported to that same JSON by
+`npm run export:static`. YouTube posters are derived from the video id; Vimeo has no thumbnail
+without an API call, so those fall back to the site mark.
 
 ## Public viewer
 

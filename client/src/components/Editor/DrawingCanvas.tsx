@@ -343,7 +343,7 @@ export function DrawingCanvas({
       onClick={handleContainerClick}
       onDoubleClick={handleContainerDoubleClick}
     >
-      <img src={imageUrl} alt="Page being edited" className="block w-full h-auto pointer-events-none" draggable={false} />
+      <img src={imageUrl} alt="הדף בעריכה" className="block w-full h-auto pointer-events-none" draggable={false} />
 
       {/* Completed shapes + draft preview, rendered in image percent space */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -434,7 +434,7 @@ export function DrawingCanvas({
               key={`${region.id}-${index}`}
               onPointerDown={(e) => startMoveVertex(e, region, index)}
               onDoubleClick={(e) => deleteVertex(e, region, index)}
-              title="Drag to move, double-click to delete"
+              title="גררו כדי להזיז, לחיצה כפולה למחיקה"
               className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-wood-dark bg-gold cursor-pointer touch-none"
               style={{ left: `${point.x}%`, top: `${point.y}%` }}
             />
@@ -480,7 +480,7 @@ export function DrawingCanvas({
             }}
             className="rounded bg-gold text-wood-dark px-4 py-2 text-sm font-semibold shadow-lg disabled:opacity-50"
           >
-            Finish shape ({draft.points.length})
+            סיום הצורה ({draft.points.length})
           </button>
           <button
             type="button"
@@ -491,7 +491,7 @@ export function DrawingCanvas({
             }}
             className="rounded bg-parchment text-ink px-4 py-2 text-sm font-semibold shadow-lg"
           >
-            Cancel
+            ביטול
           </button>
         </div>
       )}

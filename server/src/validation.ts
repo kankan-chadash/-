@@ -61,3 +61,12 @@ export const loginSchema = z.object({
   username: z.string().min(1),
   password: z.string().min(1),
 });
+
+export const videoInputSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).nullable().optional(),
+  url: z.string().min(1).max(2000),
+  sortOrder: z.number().int().optional(),
+});
+
+export const videoUpdateSchema = videoInputSchema.partial();

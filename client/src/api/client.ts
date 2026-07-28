@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions, Region } from '../types';
+import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
 
 export class ApiError extends Error {
   status: number;
@@ -61,6 +61,10 @@ export function fetchPage(id: string): Promise<PageWithRegions> {
 export function fetchPageByRef(tractate: string, daf: number, side: string): Promise<PageWithRegions> {
   const params = new URLSearchParams({ tractate, daf: String(daf), side });
   return request(`/api/pages/lookup/by-ref?${params.toString()}`);
+}
+
+export function fetchVideos(): Promise<Video[]> {
+  return request('/api/videos');
 }
 
 // --- Auth ---
@@ -119,4 +123,22 @@ export async function uploadImage(file: File): Promise<{ url: string }> {
   const formData = new FormData();
   formData.append('image', file);
   return request('/api/admin/upload', { method: 'POST', body: formData });
+}
+
+// --- Admin: standalone videos ---
+
+export function fetchAdminVideos(): Promise<Video[]> {
+  return request('/api/admin/videos');
+}
+
+export function createVideo(input: VideoInput): Promise<Video> {
+  return request('/api/admin/videos', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function updateVideo(id: string, input: Partial<VideoInput>): Promise<Video> {
+  return request(`/api/admin/videos/${id}`, { method: 'PUT', body: JSON.stringify(input) });
+}
+
+export function deleteVideo(id: string): Promise<void> {
+  return request(`/api/admin/videos/${id}`, { method: 'DELETE' });
 }

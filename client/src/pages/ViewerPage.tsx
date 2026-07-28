@@ -20,6 +20,7 @@ import { SiteHeader } from '../components/Layout/SiteHeader';
 import { DafTurner, TURN_DURATION_MS } from '../components/Viewer/DafTurner';
 import type { TurnDirection } from '../components/Viewer/DafTurner';
 import { DafTitle } from '../components/Viewer/DafTitle';
+import { Chevron } from '../components/Layout/Chevron';
 import { findSiblings, formatDaf, formatPageTitle } from '../utils/library';
 
 export function ViewerPage() {
@@ -97,16 +98,18 @@ export function ViewerPage() {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (activeRegion) return;
-      if (e.key === 'ArrowRight') goTo(siblings.next, 'next');
-      else if (e.key === 'ArrowLeft') goTo(siblings.prev, 'prev');
+      // RTL: the next daf lies to the left, so ArrowLeft advances.
+      if (e.key === 'ArrowLeft') goTo(siblings.next, 'next');
+      else if (e.key === 'ArrowRight') goTo(siblings.prev, 'prev');
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [goTo, siblings.next, siblings.prev, activeRegion]);
 
   const swipe = useSwipe({
-    onSwipeLeft: () => goTo(siblings.next, 'next'),
-    onSwipeRight: () => goTo(siblings.prev, 'prev'),
+    // RTL: dragging the page rightwards pulls the next daf in from the left.
+    onSwipeLeft: () => goTo(siblings.prev, 'prev'),
+    onSwipeRight: () => goTo(siblings.next, 'next'),
   });
 
   if (error) {
@@ -116,7 +119,7 @@ export function ViewerPage() {
         <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6">
           <p className="text-red-300">{error}</p>
           <Link to="/" className="text-gold underline">
-            Back to the library
+            חזרה לספרייה
           </Link>
         </div>
       </div>
@@ -128,13 +131,13 @@ export function ViewerPage() {
       <SiteHeader
         trailing={
           page && (
-            <div className="hidden text-right sm:block">
+            <div className="hidden text-end sm:block">
               <p className="font-serif text-lg text-parchment">
                 <DafTitle page={page} />
               </p>
               {siblings.total > 1 && (
                 <p className="text-xs text-parchment/60">
-                  Daf {siblings.index} of {siblings.total}
+                  דף {siblings.index} מתוך {siblings.total}
                 </p>
               )}
             </div>
@@ -179,7 +182,7 @@ export function ViewerPage() {
           </DafTurner>
         ) : (
           <div className="surface-parchment rounded border-t-4 border-gold p-16 text-center text-ink-variant">
-            Opening the volume…
+            פותח את הכרך…
           </div>
         )}
       </main>
@@ -210,11 +213,11 @@ function DafNav({ prev, next, onPrev, onNext }: DafNavProps) {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-gold/40 bg-wood-dark/95 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-3 px-4 py-3">
-        <TurnButton onClick={onPrev} target={prev} label="Previous daf" chevron="←" />
+        <TurnButton onClick={onPrev} target={prev} label="הדף הקודם" toward="start" />
         <Link to="/" className="shrink-0 text-xs text-parchment/60 underline hover:text-gold sm:text-sm">
-          Library
+          הספרייה
         </Link>
-        <TurnButton onClick={onNext} target={next} label="Next daf" chevron="→" alignEnd />
+        <TurnButton onClick={onNext} target={next} label="הדף הבא" toward="end" alignEnd />
       </div>
     </nav>
   );
@@ -224,13 +227,13 @@ function TurnButton({
   onClick,
   target,
   label,
-  chevron,
+  toward,
   alignEnd,
 }: {
   onClick: () => void;
   target: Page | null;
   label: string;
-  chevron: string;
+  toward: 'start' | 'end';
   alignEnd?: boolean;
 }) {
   return (
@@ -238,17 +241,17 @@ function TurnButton({
       type="button"
       onClick={onClick}
       disabled={!target}
-      aria-label={target ? `${label}: ${formatDaf(target)}` : `${label} (none)`}
+      aria-label={target ? `${label}: ${formatDaf(target)}` : `${label} (אין)`}
       className={`flex min-w-0 flex-1 items-center gap-2 rounded px-3 py-2 text-parchment transition enabled:hover:bg-white/10 disabled:opacity-30 ${
         alignEnd ? 'justify-end' : ''
       }`}
     >
-      {!alignEnd && <span aria-hidden>{chevron}</span>}
+      {!alignEnd && <Chevron toward={toward} className="h-5 w-5 shrink-0" />}
       <span className="min-w-0">
         <span className="block truncate text-[11px] uppercase tracking-wide text-parchment/60">{label}</span>
         <span className="block truncate font-serif text-base">{target ? formatDaf(target) : '—'}</span>
       </span>
-      {alignEnd && <span aria-hidden>{chevron}</span>}
+      {alignEnd && <Chevron toward={toward} className="h-5 w-5 shrink-0" />}
     </button>
   );
 }

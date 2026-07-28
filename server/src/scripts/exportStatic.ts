@@ -14,8 +14,8 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../db';
 import { config } from '../config';
-import { mapPageRow, mapRegionRow } from '../db/mappers';
-import { PageRow, RegionRow } from '../types';
+import { mapPageRow, mapRegionRow, mapVideoRow } from '../db/mappers';
+import { PageRow, RegionRow, VideoRow } from '../types';
 
 // Exports the current database content into static JSON (+ copies referenced
 // uploaded images) under client/public/data, so `npm run build:pages` can ship
@@ -86,11 +86,22 @@ function main() {
     fs.writeFileSync(path.join(PAGES_DIR, `${row.id}.json`), JSON.stringify(exported, null, 2));
   }
 
+  // Standalone shiurim (the video rail) — not tied to any daf.
+  const videoRows = db
+    .prepare('SELECT * FROM videos ORDER BY sort_order ASC, created_at ASC')
+    .all() as VideoRow[];
+  fs.writeFileSync(
+    path.join(CLIENT_PUBLIC_DATA_DIR, 'videos.json'),
+    JSON.stringify(videoRows.map(mapVideoRow), null, 2)
+  );
+
   // Keep the folders tracked in git even when there's no content yet.
   fs.writeFileSync(path.join(IMAGES_DIR, '.gitkeep'), '');
   fs.writeFileSync(path.join(PAGES_DIR, '.gitkeep'), '');
 
-  console.log(`Exported ${pageRows.length} page(s) and copied ${copiedFiles.size} image(s) to`);
+  console.log(
+    `Exported ${pageRows.length} page(s), ${videoRows.length} video(s), and copied ${copiedFiles.size} image(s) to`
+  );
   console.log(`  ${CLIENT_PUBLIC_DATA_DIR}`);
   console.log('Commit the client/public/data/** changes, then push/merge to trigger the GitHub Pages deploy.');
 }

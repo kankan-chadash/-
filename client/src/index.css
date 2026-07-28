@@ -1,8 +1,10 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-serif: 'EB Garamond', Georgia, serif;
-  --font-sans: 'Source Sans 3', system-ui, sans-serif;
+  /* Hebrew-first typography: a classic Hebrew serif for headings, and a Hebrew
+     sans for UI text. Both carry Latin glyphs, so mixed strings stay coherent. */
+  --font-serif: 'Frank Ruhl Libre', 'EB Garamond', Georgia, serif;
+  --font-sans: 'Heebo', system-ui, sans-serif;
 
   --color-wood: #4e342e;
   --color-wood-dark: #361f1a;
@@ -214,4 +216,150 @@ polygon.hotspot-region:hover,
 polygon.hotspot-region.is-active {
   fill: rgba(212, 175, 55, 0.14);
   stroke: rgba(212, 175, 55, 0.85);
+}
+
+/* --- The video rail ------------------------------------------------------- */
+
+/* An aged beam the shiur plaques hang from. */
+.rail-beam {
+  background-color: #43281f;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.22) 0px,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent 1px,
+      transparent 19px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 226, 190, 0.06) 0px,
+      rgba(255, 226, 190, 0.06) 2px,
+      transparent 2px,
+      transparent 47px
+    ),
+    linear-gradient(180deg, #6b4230 0%, #43281f 45%, #23120d 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 226, 190, 0.14),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.6),
+    0 10px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Hammered brass studs punched along the beam. */
+.rail-stud {
+  background: radial-gradient(circle at 35% 30%, #f0d98a 0%, #c9a227 45%, #6d5310 100%);
+  box-shadow:
+    inset 0 -1px 2px rgba(0, 0, 0, 0.55),
+    0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Each shiur is a plaque hanging off the beam. */
+.rail-card {
+  transform-style: preserve-3d;
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.45s ease,
+    filter 0.45s ease;
+  transform-origin: top center;
+  will-change: transform;
+  /* The hang angle lives here rather than in an inline style — an inline
+     transform would outrank the :hover rule below and kill the lift. */
+  transform: rotate(var(--rail-rot, 0deg));
+}
+.rail-card:hover,
+.rail-card:focus-visible {
+  /* Lifts toward the viewer and swings straight, like taking it off the hook. */
+  transform: translateY(-10px) rotate(0deg) rotateX(6deg) scale(1.04);
+  box-shadow:
+    0 26px 44px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(212, 175, 55, 0.55),
+    0 0 26px rgba(212, 175, 55, 0.28);
+  filter: brightness(1.06);
+  z-index: 20;
+}
+
+/* The hook and cord the plaque hangs by. */
+.rail-hook {
+  background: linear-gradient(180deg, #d9bf6e, #8a6d1c);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+/* Slow gleam that travels across a plaque on hover. */
+.rail-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 240, 200, 0.22) 46%,
+    rgba(255, 240, 200, 0.06) 54%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  opacity: 0;
+  transition: transform 0.85s ease, opacity 0.3s ease;
+}
+.rail-card:hover::after,
+.rail-card:focus-visible::after {
+  transform: translateX(120%);
+  opacity: 1;
+}
+
+/* Play badge breathing so the rail doesn't read as a static shelf of images. */
+@keyframes rail-play-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(212, 175, 55, 0);
+  }
+}
+.rail-play {
+  animation: rail-play-pulse 2.6s ease-out infinite;
+}
+
+/* Plaques settle onto the rail on first paint, staggered by index. */
+@keyframes rail-settle {
+  from {
+    opacity: 0;
+    transform: translateY(-26px) rotate(var(--rail-rot, 0deg));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(var(--rail-rot, 0deg));
+  }
+}
+.rail-settling {
+  animation: rail-settle 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) backwards;
+}
+
+/* Horizontal track: snap points, no visible scrollbar. */
+.rail-track {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rail-track::-webkit-scrollbar {
+  display: none;
+}
+.rail-slot {
+  scroll-snap-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail-card,
+  .rail-card::after {
+    transition: none;
+  }
+  .rail-play,
+  .rail-settling {
+    animation: none;
+  }
+  .rail-card:hover,
+  .rail-card:focus-visible {
+    transform: none;
+  }
 }

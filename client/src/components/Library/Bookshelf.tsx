@@ -26,7 +26,7 @@ export function Bookshelf({ books }: BookshelfProps) {
   return (
     <div className="space-y-10">
       {shelves.map((shelf, shelfIndex) => (
-        <section key={shelfIndex} aria-label={`Shelf ${shelfIndex + 1}`}>
+        <section key={shelfIndex} aria-label={`מדף ${shelfIndex + 1}`}>
           <div className="flex h-60 items-end justify-center gap-2 rounded-t bg-black/25 px-4 shadow-inner sm:h-72 sm:gap-3 sm:px-8">
             {shelf.map((book, i) => (
               <BookSpine
@@ -55,8 +55,8 @@ function BookSpine({ book, leaning }: { book: Book; leaning: boolean }) {
       type="button"
       // A click on the volume opens it straight to its first published daf.
       onClick={() => navigate(`/view/${book.firstPage.id}`)}
-      title={`${book.tractate} — opens at daf ${formatDaf(book.firstPage)}`}
-      aria-label={`Open ${book.tractate}, ${dafCount} ${dafCount === 1 ? 'daf' : 'dapim'}, starting at daf ${formatDaf(book.firstPage)}`}
+      title={`${book.tractate} — נפתח בדף ${formatDaf(book.firstPage)}`}
+      aria-label={`פתיחת ${book.tractate}, ${dafCount} ${dafCount === 1 ? 'דף' : 'דפים'}, החל מדף ${formatDaf(book.firstPage)}`}
       className={`book-spine ${style.leather} relative flex flex-col items-center justify-between overflow-hidden rounded-t-sm py-4 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
         style.tilted ? 'rotate-3' : ''
       }`}
@@ -79,7 +79,7 @@ function BookSpine({ book, leaning }: { book: Book; leaning: boolean }) {
         </span>
       </span>
       <span className="relative z-10 text-[10px] text-gold/70 sm:text-xs">
-        {dafCount} {dafCount === 1 ? 'daf' : 'dapim'}
+        {dafCount} {dafCount === 1 ? 'דף' : 'דפים'}
       </span>
     </button>
   );

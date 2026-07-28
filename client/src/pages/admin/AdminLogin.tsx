@@ -54,17 +54,17 @@ function UsernamePasswordLogin() {
       const from = location.state?.from?.pathname ?? '/admin';
       navigate(from, { replace: true });
     } catch {
-      setError('Invalid username or password');
+      setError('שם משתמש או סיסמה שגויים');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <LoginShell title="Admin Sign In">
+    <LoginShell title="כניסת מנהל">
       <form onSubmit={handleSubmit}>
         <label className="block mb-4">
-          <span className="text-sm text-ink-variant">Username</span>
+          <span className="text-sm text-ink-variant">שם משתמש</span>
           <input
             type="text"
             required
@@ -76,7 +76,7 @@ function UsernamePasswordLogin() {
         </label>
 
         <label className="block mb-6">
-          <span className="text-sm text-ink-variant">Password</span>
+          <span className="text-sm text-ink-variant">סיסמה</span>
           <input
             type="password"
             required
@@ -93,7 +93,7 @@ function UsernamePasswordLogin() {
           disabled={isSubmitting}
           className="w-full rounded bg-wood-dark text-gold py-2.5 font-semibold hover:bg-wood transition disabled:opacity-60"
         >
-          {isSubmitting ? 'Signing in…' : 'Sign In'}
+          {isSubmitting ? 'מתחבר…' : 'כניסה'}
         </button>
       </form>
     </LoginShell>
@@ -121,38 +121,38 @@ function GithubTokenLogin() {
       const from = location.state?.from?.pathname ?? '/admin';
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not validate this token');
+      setError(err instanceof Error ? err.message : 'לא ניתן לאמת את הטוקן');
     } finally {
       setIsSubmitting(false);
     }
   }
 
   return (
-    <LoginShell title="Admin Sign In">
+    <LoginShell title="כניסת מנהל">
       <p className="text-sm text-ink-variant mb-4">
-        This admin panel runs entirely in your browser and commits changes straight to this repo
-        using your own GitHub token — no separate login exists. Paste a{' '}
+        פאנל הניהול רץ כולו בדפדפן שלכם ושומר שינויים ישירות למאגר באמצעות טוקן GitHub אישי —
+        אין כאן משתמש וסיסמה נפרדים. הדביקו{' '}
         <a
           href="https://github.com/settings/personal-access-tokens/new"
           target="_blank"
           rel="noreferrer"
           className="text-wood-dark underline"
         >
-          fine-grained personal access token
+          טוקן גישה אישי מסוג fine-grained
         </a>{' '}
-        scoped to just this repository, with <strong>Contents: Read and write</strong> permission
-        and nothing else.
+        המוגבל למאגר הזה בלבד, עם הרשאת <strong>Contents: Read and write</strong> ותו לא.
       </p>
 
       <form onSubmit={handleSubmit}>
         <label className="block mb-4">
-          <span className="text-sm text-ink-variant">GitHub personal access token</span>
+          <span className="text-sm text-ink-variant">טוקן גישה אישי של GitHub</span>
           <input
             type="password"
             required
             autoFocus
             autoComplete="off"
             placeholder="github_pat_..."
+            dir="ltr"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             className="mt-1 w-full rounded border border-outline bg-white px-3 py-2 font-mono text-sm focus:outline-none focus:border-gold"
@@ -166,14 +166,14 @@ function GithubTokenLogin() {
           disabled={isSubmitting || !value.trim()}
           className="w-full rounded bg-wood-dark text-gold py-2.5 font-semibold hover:bg-wood transition disabled:opacity-60"
         >
-          {isSubmitting ? 'Checking access…' : 'Use this token'}
+          {isSubmitting ? 'בודק גישה…' : 'שימוש בטוקן'}
         </button>
       </form>
 
       <p className="text-xs text-ink-variant mt-4">
-        The token is stored only in this browser (localStorage) and sent only to GitHub's API —
-        never to any other server. Anyone who has it can edit this repo, so only use a token scoped
-        to this one repository, and don't sign in on a shared computer.
+        הטוקן נשמר רק בדפדפן הזה (localStorage) ונשלח רק ל-API של GitHub — לעולם לא לשרת אחר.
+        כל מי שמחזיק בו יכול לערוך את המאגר, לכן השתמשו רק בטוקן המוגבל למאגר הזה, ואל תתחברו
+        ממחשב משותף.
       </p>
     </LoginShell>
   );

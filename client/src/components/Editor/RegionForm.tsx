@@ -24,44 +24,44 @@ export function RegionForm({ region, onChange, onDelete }: RegionFormProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-serif text-lg text-wood-dark">
-          {region.shape === 'rectangle' ? 'Rectangle region' : 'Polygon region'}
+          {region.shape === 'rectangle' ? 'אזור מלבני' : 'אזור מצולע'}
         </h3>
         <button type="button" onClick={onDelete} className="text-red-600 text-sm hover:underline">
-          Delete region
+          מחיקת אזור
         </button>
       </div>
 
       <label className="block">
-        <span className="text-sm text-ink-variant">Title (optional)</span>
+        <span className="text-sm text-ink-variant">כותרת (רשות)</span>
         <input
           value={region.title ?? ''}
           onChange={(e) => onChange({ ...region, title: e.target.value || null })}
-          placeholder="Shown as the popup heading"
+          placeholder="הכותרת שתוצג בחלון הקופץ"
           className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
         />
       </label>
 
       <label className="block">
-        <span className="text-sm text-ink-variant">Content type</span>
+        <span className="text-sm text-ink-variant">סוג התוכן</span>
         <select
           value={region.contentType}
           onChange={(e) => onChange({ ...region, contentType: e.target.value as ContentType })}
           className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
         >
-          <option value="text">Text</option>
-          <option value="image">Image</option>
-          <option value="video">Video</option>
+          <option value="text">טקסט</option>
+          <option value="image">תמונה</option>
+          <option value="video">סרטון</option>
         </select>
       </label>
 
       {region.contentType === 'text' && (
         <label className="block">
-          <span className="text-sm text-ink-variant">Text / HTML content</span>
+          <span className="text-sm text-ink-variant">תוכן טקסט / HTML</span>
           <textarea
             value={region.content}
             onChange={(e) => onChange({ ...region, content: e.target.value })}
             rows={6}
-            placeholder="Explanation shown when this region is clicked"
+            placeholder="ההסבר שיוצג בלחיצה על האזור"
             className="mt-1 w-full rounded border border-outline bg-white px-3 py-2 font-mono text-sm"
           />
         </label>
@@ -69,11 +69,11 @@ export function RegionForm({ region, onChange, onDelete }: RegionFormProps) {
 
       {region.contentType === 'image' && (
         <label className="block">
-          <span className="text-sm text-ink-variant">Image URL</span>
+          <span className="text-sm text-ink-variant">כתובת תמונה</span>
           <input
             value={region.content}
             onChange={(e) => onChange({ ...region, content: e.target.value })}
-            placeholder="https://... or /uploads/..."
+            placeholder="https://... או /uploads/..."
             className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
           />
         </label>
@@ -81,7 +81,7 @@ export function RegionForm({ region, onChange, onDelete }: RegionFormProps) {
 
       {region.contentType === 'video' && (
         <label className="block">
-          <span className="text-sm text-ink-variant">Video URL (YouTube / Vimeo)</span>
+          <span className="text-sm text-ink-variant">כתובת סרטון (YouTube / Vimeo)</span>
           <input
             value={region.content}
             onChange={(e) => onChange({ ...region, content: e.target.value })}

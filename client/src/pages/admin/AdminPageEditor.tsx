@@ -20,6 +20,12 @@ import type { EditableRegion } from '../../components/Editor/types';
 import { RegionForm } from '../../components/Editor/RegionForm';
 import { RegionList } from '../../components/Editor/RegionList';
 
+const MODE_LABELS: Record<EditorMode, string> = {
+  select: 'בחירה',
+  rectangle: 'מלבן',
+  polygon: 'מצולע',
+};
+
 export function AdminPageEditor() {
   const { pageId } = useParams<{ pageId: string }>();
   const location = useLocation() as { state?: { previewImageUrl?: string } };
@@ -70,7 +76,7 @@ export function AdminPageEditor() {
       setRegions(saved.regions.map((r) => ({ ...r })));
       setStatus('saved');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save regions');
+      setError(err instanceof Error ? err.message : 'שמירת האזורים נכשלה');
       setStatus('idle');
     }
   }
@@ -88,11 +94,11 @@ export function AdminPageEditor() {
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
           <Link to="/admin" className="text-parchment/80 hover:text-gold text-sm">
-            ← All pages
+            → כל הדפים
           </Link>
           {page && (
             <h1 className="font-serif text-xl text-parchment">
-              {page.tractate} {page.daf}{page.side} — Region Editor
+              <bdi>{page.tractate}</bdi> {page.daf}{page.side} — עורך אזורים
             </h1>
           )}
           <button
@@ -100,7 +106,7 @@ export function AdminPageEditor() {
             disabled={status === 'saving'}
             className="rounded bg-gold text-wood-dark px-4 py-2 font-semibold hover:brightness-95 transition disabled:opacity-60"
           >
-            {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved ✓' : 'Save regions'}
+            {status === 'saving' ? 'שומר…' : status === 'saved' ? 'נשמר ✓' : 'שמירת אזורים'}
           </button>
         </div>
       </header>
@@ -109,9 +115,8 @@ export function AdminPageEditor() {
         <section>
           {previewImageUrl && isGithubAdminMode && (
             <p className="mb-3 text-xs text-parchment/70">
-              Showing a local preview of the image you just uploaded — it'll be live at its real
-              address after the next GitHub Pages deploy finishes (about a minute). If you reload
-              this page before then, the image won't display until it does.
+              מוצגת תצוגה מקומית של התמונה שהעליתם — היא תהיה זמינה בכתובת האמיתית שלה בתום
+              הפריסה הבאה של GitHub Pages (כדקה). אם תרעננו את הדף לפני כן, התמונה לא תוצג עד אז.
             </p>
           )}
           <div className="mb-3 flex gap-2">
@@ -119,20 +124,20 @@ export function AdminPageEditor() {
               <button
                 key={m}
                 onClick={() => setMode(m)}
-                className={`px-3 py-1.5 rounded text-sm font-medium capitalize border ${
+                className={`px-3 py-1.5 rounded text-sm font-medium border ${
                   mode === m
                     ? 'bg-gold text-wood-dark border-gold'
                     : 'bg-parchment text-ink border-outline hover:border-gold'
                 }`}
               >
-                {m}
+                {MODE_LABELS[m]}
               </button>
             ))}
-            <p className="ml-2 self-center text-xs text-parchment/70">
-              {mode === 'rectangle' && 'Drag across the image to draw a rectangle.'}
+            <p className="ms-2 self-center text-xs text-parchment/70">
+              {mode === 'rectangle' && 'גררו על התמונה כדי לסמן מלבן.'}
               {mode === 'polygon' &&
-                'Tap or click to place points, then press "Finish shape". You can also close it by tapping the first point again, double-clicking, or pressing Enter.'}
-              {mode === 'select' && 'Tap a region to edit it. Drag to move, drag the handles to resize.'}
+                'הקישו כדי להוסיף נקודות, ואז לחצו על "סיום הצורה". אפשר גם לסגור בהקשה חוזרת על הנקודה הראשונה, בלחיצה כפולה או ב-Enter.'}
+              {mode === 'select' && 'הקישו על אזור כדי לערוך אותו. גררו כדי להזיז, וגררו את הידיות כדי לשנות גודל.'}
             </p>
           </div>
 
@@ -154,7 +159,7 @@ export function AdminPageEditor() {
 
         <aside className="space-y-6">
           <div className="bg-parchment rounded shadow-lg border-t-4 border-gold p-5">
-            <h2 className="font-serif text-lg text-wood-dark mb-3">Regions ({regions.length})</h2>
+            <h2 className="font-serif text-lg text-wood-dark mb-3">אזורים ({regions.length})</h2>
             <RegionList regions={regions} selectedId={selectedId} onSelect={setSelectedId} />
           </div>
 

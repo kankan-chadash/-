@@ -54,7 +54,7 @@ export function HotspotOverlay({
             key={region.id}
             role="button"
             tabIndex={0}
-            aria-label={region.title ?? 'Hotspot region'}
+            aria-label={region.title ?? 'אזור לחיץ'}
             className={`hotspot-region${region.id === activeRegionId ? ' is-active' : ''}`}
             style={style}
             onClick={() => onSelectRegion(region)}
@@ -86,7 +86,7 @@ export function HotspotOverlay({
                 vectorEffect="non-scaling-stroke"
                 tabIndex={0}
                 role="button"
-                aria-label={region.title ?? 'Hotspot region'}
+                aria-label={region.title ?? 'אזור לחיץ'}
                 onClick={() => onSelectRegion(region)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {

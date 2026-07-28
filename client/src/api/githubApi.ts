@@ -78,7 +78,7 @@ export async function getFile(token: string, path: string): Promise<RepoFile | n
     { headers: authHeaders(token) }
   );
   if (res.status === 404) return null;
-  if (!res.ok) throw new GithubApiError(`Reading ${path}: ${await extractErrorMessage(res)}`, res.status);
+  if (!res.ok) throw new GithubApiError(`קריאת ${path} נכשלה: ${await extractErrorMessage(res)}`, res.status);
   const data = await res.json();
   return { content: decodeBase64(data.content), sha: data.sha };
 }
@@ -111,11 +111,11 @@ export async function putRawFile(
     const message = await extractErrorMessage(res);
     if (res.status === 409) {
       throw new GithubApiError(
-        `${path} changed on GitHub since it was loaded here. Reload and try again.`,
+        `${path} השתנה ב-GitHub מאז שנטען כאן. רעננו ונסו שוב.`,
         409
       );
     }
-    throw new GithubApiError(`Writing ${path}: ${message}`, res.status);
+    throw new GithubApiError(`כתיבת ${path} נכשלה: ${message}`, res.status);
   }
 }
 
@@ -125,7 +125,7 @@ export async function deleteFile(token: string, path: string, sha: string, messa
     headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, sha, branch: BRANCH }),
   });
-  if (!res.ok) throw new GithubApiError(`Deleting ${path}: ${await extractErrorMessage(res)}`, res.status);
+  if (!res.ok) throw new GithubApiError(`מחיקת ${path} נכשלה: ${await extractErrorMessage(res)}`, res.status);
 }
 
 export interface GithubIdentity {
@@ -140,11 +140,11 @@ export async function checkRepoAccess(token: string): Promise<GithubIdentity> {
     fetch(`${API_BASE}/repos/${OWNER}/${REPO}`, { headers: authHeaders(token) }),
   ]);
   if (!userRes.ok) {
-    throw new GithubApiError(`Invalid token: ${await extractErrorMessage(userRes)}`, userRes.status);
+    throw new GithubApiError(`טוקן לא תקין: ${await extractErrorMessage(userRes)}`, userRes.status);
   }
   if (!repoRes.ok) {
     throw new GithubApiError(
-      `Token can't access ${OWNER}/${REPO}: ${await extractErrorMessage(repoRes)}`,
+      `לטוקן אין גישה אל ${OWNER}/${REPO}: ${await extractErrorMessage(repoRes)}`,
       repoRes.status
     );
   }
@@ -152,7 +152,7 @@ export async function checkRepoAccess(token: string): Promise<GithubIdentity> {
   const repo = await repoRes.json();
   if (!repo.permissions?.push) {
     throw new GithubApiError(
-      `This token doesn't have write access to ${OWNER}/${REPO}. Use a fine-grained token with "Contents: Read and write" permission on this repository.`,
+      `לטוקן אין הרשאת כתיבה אל ${OWNER}/${REPO}. יש להשתמש בטוקן fine-grained עם הרשאת "Contents: Read and write" על המאגר הזה.`,
       403
     );
   }
@@ -166,7 +166,7 @@ export function readFileAsBase64(file: File): Promise<string> {
       const result = reader.result as string;
       resolve(result.slice(result.indexOf(',') + 1));
     };
-    reader.onerror = () => reject(new Error('Could not read the selected file'));
+    reader.onerror = () => reject(new Error('לא ניתן לקרוא את הקובץ שנבחר'));
     reader.readAsDataURL(file);
   });
 }

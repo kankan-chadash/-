@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions } from '../types';
+import type { Page, PageWithRegions, Video } from '../types';
 
 // Reads data pre-exported by `server/src/scripts/exportStatic.ts` (see README).
 // Used instead of api/client.ts when built with `npm run build:pages`, since a
@@ -43,14 +43,22 @@ function resolvePageWithRegions(page: PageWithRegions): PageWithRegions {
 
 export async function fetchPages(): Promise<Page[]> {
   const res = await fetch(`${BASE}data/pages.json`);
-  if (!res.ok) throw new Error('Failed to load pages');
+  if (!res.ok) throw new Error('טעינת הדפים נכשלה');
   const pages: Page[] = await res.json();
   return pages.map(resolvePage);
 }
 
 export async function fetchPage(id: string): Promise<PageWithRegions> {
   const res = await fetch(`${BASE}data/pages/${id}.json`);
-  if (!res.ok) throw new Error('Page not found');
+  if (!res.ok) throw new Error('הדף לא נמצא');
   const page: PageWithRegions = await res.json();
   return resolvePageWithRegions(page);
+}
+
+/** The videos rail. Absent videos.json just means none have been published yet. */
+export async function fetchVideos(): Promise<Video[]> {
+  const res = await fetch(`${BASE}data/videos.json`);
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error('טעינת השיעורים נכשלה');
+  return (await res.json()) as Video[];
 }
