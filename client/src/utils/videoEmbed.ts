@@ -86,11 +86,55 @@ function videoIdOf(url: string): { host: 'youtube' | 'vimeo'; id: string } | nul
 }
 
 /**
- * A poster image for a video URL, or null when we can't derive one without an
- * API call (Vimeo thumbnails need oEmbed, so those fall back to the site mark).
+ * A poster image derivable from the URL alone. YouTube encodes it in the video
+ * id; Vimeo does not, so those come back null here and need resolveThumbnail().
  */
 export function toThumbnailUrl(url: string): string | null {
   const video = videoIdOf(url);
   if (video?.host === 'youtube') return `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
   return null;
+}
+
+// Vimeo posters have to be asked for. Its oEmbed endpoint is public and sends
+// `Access-Control-Allow-Origin: *`, so the browser can call it directly with no
+// backend and no API key. Results are cached per URL for the life of the page —
+// the same video appears on the rail on every visit to /videos.
+const vimeoThumbnails = new Map<string, Promise<string | null>>();
+
+const VIMEO_OEMBED = 'https://vimeo.com/api/oembed.json';
+
+async function fetchVimeoThumbnail(id: string, width: number): Promise<string | null> {
+  try {
+    // Ask by canonical URL rather than the stored one: saved links often carry
+    // tracking query params, and oEmbed is happier without them.
+    const target = `${VIMEO_OEMBED}?url=${encodeURIComponent(`https://vimeo.com/${id}`)}&width=${width}`;
+    const res = await fetch(target);
+    if (!res.ok) return null;
+    const data = (await res.json()) as { thumbnail_url?: string };
+    return data.thumbnail_url ?? null;
+  } catch {
+    // Private videos, a network failure, or an offline viewer: the caller falls
+    // back to the site mark, so a missing poster is never an error worth showing.
+    return null;
+  }
+}
+
+/**
+ * Resolves a poster for any supported video, fetching it when the host doesn't
+ * encode one in the URL. Returns null when no poster can be had.
+ */
+export function resolveThumbnail(url: string, width = 640): Promise<string | null> {
+  const direct = toThumbnailUrl(url);
+  if (direct) return Promise.resolve(direct);
+
+  const video = videoIdOf(url);
+  if (video?.host !== 'vimeo') return Promise.resolve(null);
+
+  const key = `${video.id}@${width}`;
+  let pending = vimeoThumbnails.get(key);
+  if (!pending) {
+    pending = fetchVimeoThumbnail(video.id, width);
+    vimeoThumbnails.set(key, pending);
+  }
+  return pending;
 }

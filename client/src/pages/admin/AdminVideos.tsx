@@ -15,7 +15,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import type { Video } from '../../types';
 import { useAdminApi } from '../../api/adminData';
-import { toThumbnailUrl } from '../../utils/videoEmbed';
+import { useThumbnail } from '../../hooks/useThumbnail';
 
 export function AdminVideos() {
   const api = useAdminApi();
@@ -180,12 +180,9 @@ export function AdminVideos() {
           {videos.length === 0 && <p className="text-sm text-ink-variant">עדיין אין סרטונים.</p>}
           <ul className="divide-y divide-outline/40">
             {videos.map((video, i) => {
-              const thumbnail = toThumbnailUrl(video.url);
               return (
                 <li key={video.id} className="flex items-center gap-3 py-3">
-                  <div className="h-12 w-20 shrink-0 overflow-hidden rounded bg-wood-dark">
-                    {thumbnail && <img src={thumbnail} alt="" className="h-full w-full object-cover" />}
-                  </div>
+                  <VideoThumb url={video.url} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-ink">{video.title}</p>
                     <p className="truncate text-xs text-ink-variant" dir="ltr">
@@ -225,6 +222,16 @@ export function AdminVideos() {
           </ul>
         </section>
       </main>
+    </div>
+  );
+}
+
+/** Its own component so the poster lookup can be a hook (Vimeo resolves async). */
+function VideoThumb({ url }: { url: string }) {
+  const thumbnail = useThumbnail(url, 320);
+  return (
+    <div className="h-12 w-20 shrink-0 overflow-hidden rounded bg-wood-dark">
+      {thumbnail && <img src={thumbnail} alt="" className="h-full w-full object-cover" />}
     </div>
   );
 }
