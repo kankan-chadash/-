@@ -129,10 +129,10 @@ export function AdminPageEditor() {
               </button>
             ))}
             <p className="ml-2 self-center text-xs text-parchment/70">
-              {mode === 'rectangle' && 'Drag to draw a rectangle.'}
+              {mode === 'rectangle' && 'Drag across the image to draw a rectangle.'}
               {mode === 'polygon' &&
-                'Click to place points. Close by clicking the first point, double-clicking, or pressing Enter.'}
-              {mode === 'select' && 'Click a region to edit it. Drag to move, drag handles to resize.'}
+                'Tap or click to place points, then press "Finish shape". You can also close it by tapping the first point again, double-clicking, or pressing Enter.'}
+              {mode === 'select' && 'Tap a region to edit it. Drag to move, drag the handles to resize.'}
             </p>
           </div>
 

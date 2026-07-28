@@ -52,7 +52,7 @@ type Draft =
   | { type: 'polygon'; points: PolygonPoint[]; cursor: PolygonPoint | null };
 
 const MIN_RECT_SIZE = 1; // percent
-const CLOSE_DISTANCE_PX = 14;
+const CLOSE_DISTANCE_PX = 24;
 
 function applyDrag(ds: DragState, region: EditableRegion, point: PolygonPoint): EditableRegion {
   if (ds.type === 'move-rect') {
@@ -98,8 +98,13 @@ export function DrawingCanvas({
 
   // --- Rectangle drawing ---
 
-  function handleContainerMouseDown(e: React.MouseEvent) {
+  function handleContainerPointerDown(e: React.PointerEvent) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (mode === 'rectangle') {
+      // Keep the gesture (and any touch drag) routed here instead of letting the
+      // browser turn it into a scroll/selection partway through the drag.
+      e.preventDefault();
+      containerRef.current?.setPointerCapture(e.pointerId);
       const point = toPercent(e);
       setDraft({ type: 'rectangle', start: point, current: point });
     } else if (mode === 'select') {
@@ -110,11 +115,11 @@ export function DrawingCanvas({
   useEffect(() => {
     if (!draft || draft.type !== 'rectangle') return;
 
-    function handleMouseMove(e: MouseEvent) {
+    function handlePointerMove(e: PointerEvent) {
       setDraft((prev) => (prev && prev.type === 'rectangle' ? { ...prev, current: toPercent(e) } : prev));
     }
 
-    function handleMouseUp(e: MouseEvent) {
+    function handlePointerUp(e: PointerEvent) {
       // Read the draft directly rather than via a setDraft updater: calling the
       // onRegionsChange/onRegionCreated/onModeChange callbacks (which update the
       // parent's state) from inside a setState updater triggers React's
@@ -141,11 +146,17 @@ export function DrawingCanvas({
       }
     }
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp, { once: true });
+    function handlePointerCancel() {
+      setDraft(null);
+    }
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp, { once: true });
+    window.addEventListener('pointercancel', handlePointerCancel);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerCancel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draft]);
@@ -168,7 +179,9 @@ export function DrawingCanvas({
         return;
       }
     }
-    setDraft({ ...draft, points: [...draft.points, point] });
+    // Track the cursor to the newly placed point as well: touch never fires a
+    // move, so otherwise the rubber-band line would trail to a stale position.
+    setDraft({ ...draft, points: [...draft.points, point], cursor: point });
   }
 
   function handleContainerDoubleClick() {
@@ -193,8 +206,8 @@ export function DrawingCanvas({
     onModeChange('select');
   }
 
-  function handleContainerMouseMoveForRubberBand(e: React.MouseEvent) {
-    if (mode !== 'polygon') return;
+  function handleContainerPointerMove(e: React.PointerEvent) {
+    if (mode !== 'polygon' || e.pointerType !== 'mouse') return;
     const point = toPercent(e);
     setDraft((prev) => (prev && prev.type === 'polygon' ? { ...prev, cursor: point } : prev));
   }
@@ -218,10 +231,20 @@ export function DrawingCanvas({
 
   // --- Editing existing regions (select mode) ---
 
-  function startMoveRect(e: React.MouseEvent, region: EditableRegion) {
+  // Captures the pointer on the element the drag started from, so the drag keeps
+  // delivering events (to the window listeners below) even when the finger or
+  // cursor leaves that element — and so a touch drag isn't stolen for scrolling.
+  function beginDrag(e: React.PointerEvent, region: EditableRegion, next: DragState) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.stopPropagation();
+    e.preventDefault();
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
     onSelect(region.id);
-    setDragState({
+    setDragState(next);
+  }
+
+  function startMoveRect(e: React.PointerEvent, region: EditableRegion) {
+    beginDrag(e, region, {
       type: 'move-rect',
       regionId: region.id,
       startMouse: toPercent(e),
@@ -229,10 +252,8 @@ export function DrawingCanvas({
     });
   }
 
-  function startResizeRect(e: React.MouseEvent, region: EditableRegion, corner: Corner) {
-    e.stopPropagation();
-    onSelect(region.id);
-    setDragState({
+  function startResizeRect(e: React.PointerEvent, region: EditableRegion, corner: Corner) {
+    beginDrag(e, region, {
       type: 'resize-rect',
       regionId: region.id,
       corner,
@@ -240,10 +261,8 @@ export function DrawingCanvas({
     });
   }
 
-  function startMovePolygon(e: React.MouseEvent, region: EditableRegion) {
-    e.stopPropagation();
-    onSelect(region.id);
-    setDragState({
+  function startMovePolygon(e: React.PointerEvent, region: EditableRegion) {
+    beginDrag(e, region, {
       type: 'move-polygon',
       regionId: region.id,
       startMouse: toPercent(e),
@@ -251,10 +270,8 @@ export function DrawingCanvas({
     });
   }
 
-  function startMoveVertex(e: React.MouseEvent, region: EditableRegion, vertexIndex: number) {
-    e.stopPropagation();
-    onSelect(region.id);
-    setDragState({ type: 'move-vertex', regionId: region.id, vertexIndex });
+  function startMoveVertex(e: React.PointerEvent, region: EditableRegion, vertexIndex: number) {
+    beginDrag(e, region, { type: 'move-vertex', regionId: region.id, vertexIndex });
   }
 
   function deleteVertex(e: React.MouseEvent, region: EditableRegion, vertexIndex: number) {
@@ -272,21 +289,23 @@ export function DrawingCanvas({
     const ds = dragState;
     if (!ds) return;
 
-    function handleMouseMove(e: MouseEvent) {
+    function handlePointerMove(e: PointerEvent) {
       if (!ds) return;
       const point = pixelToPercent(e.clientX, e.clientY, containerRef.current!);
       onRegionsChange((regs) => regs.map((r) => (r.id === ds.regionId ? applyDrag(ds, r, point) : r)));
     }
 
-    function handleMouseUp() {
+    function handlePointerUp() {
       setDragState(null);
     }
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp, { once: true });
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp, { once: true });
+    window.addEventListener('pointercancel', handlePointerUp);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragState]);
@@ -310,13 +329,17 @@ export function DrawingCanvas({
 
   const cursorClass =
     mode === 'rectangle' || mode === 'polygon' ? 'cursor-crosshair' : 'cursor-default';
+  // While drawing, the whole canvas must own the touch gesture. In select mode a
+  // drag on blank image area should still scroll the page (these images are tall);
+  // the regions/handles opt out individually so dragging them isn't stolen.
+  const touchActionClass = mode === 'select' ? 'touch-pan-y' : 'touch-none';
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full select-none ${cursorClass}`}
-      onMouseDown={handleContainerMouseDown}
-      onMouseMove={handleContainerMouseMoveForRubberBand}
+      className={`relative w-full select-none ${touchActionClass} ${cursorClass}`}
+      onPointerDown={handleContainerPointerDown}
+      onPointerMove={handleContainerPointerMove}
       onClick={handleContainerClick}
       onDoubleClick={handleContainerDoubleClick}
     >
@@ -337,8 +360,8 @@ export function DrawingCanvas({
                 stroke={isSelected ? '#D4AF37' : '#4E342E'}
                 strokeWidth={isSelected ? 1.5 : 1}
                 vectorEffect="non-scaling-stroke"
-                className="pointer-events-auto cursor-move"
-                onMouseDown={(e) => startMovePolygon(e, region)}
+                className="pointer-events-auto cursor-move touch-none"
+                onPointerDown={(e) => startMovePolygon(e, region)}
               />
             );
           })}
@@ -377,23 +400,23 @@ export function DrawingCanvas({
           return (
             <div
               key={region.id}
-              className={`absolute cursor-move border ${
+              className={`absolute cursor-move border touch-none ${
                 isSelected ? 'border-gold bg-gold/20' : 'border-wood-dark/70 bg-wood-dark/10'
               }`}
               style={{ left: `${coords.x}%`, top: `${coords.y}%`, width: `${coords.width}%`, height: `${coords.height}%` }}
-              onMouseDown={(e) => startMoveRect(e, region)}
+              onPointerDown={(e) => startMoveRect(e, region)}
             >
               {isSelected &&
                 (['nw', 'ne', 'sw', 'se'] as Corner[]).map((corner) => (
                   <div
                     key={corner}
-                    onMouseDown={(e) => startResizeRect(e, region, corner)}
-                    className="absolute h-3 w-3 rounded-full border border-wood-dark bg-gold"
+                    onPointerDown={(e) => startResizeRect(e, region, corner)}
+                    className="absolute h-5 w-5 rounded-full border border-wood-dark bg-gold touch-none"
                     style={{
-                      left: corner.includes('w') ? '-6px' : undefined,
-                      right: corner.includes('e') ? '-6px' : undefined,
-                      top: corner.includes('n') ? '-6px' : undefined,
-                      bottom: corner.includes('s') ? '-6px' : undefined,
+                      left: corner.includes('w') ? '-10px' : undefined,
+                      right: corner.includes('e') ? '-10px' : undefined,
+                      top: corner.includes('n') ? '-10px' : undefined,
+                      bottom: corner.includes('s') ? '-10px' : undefined,
                       cursor: corner === 'nw' || corner === 'se' ? 'nwse-resize' : 'nesw-resize',
                     }}
                   />
@@ -409,10 +432,10 @@ export function DrawingCanvas({
           (region.coordinates as PolygonCoordinates).map((point, index) => (
             <div
               key={`${region.id}-${index}`}
-              onMouseDown={(e) => startMoveVertex(e, region, index)}
+              onPointerDown={(e) => startMoveVertex(e, region, index)}
               onDoubleClick={(e) => deleteVertex(e, region, index)}
               title="Drag to move, double-click to delete"
-              className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border border-wood-dark bg-gold cursor-pointer"
+              className="absolute h-5 w-5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-wood-dark bg-gold cursor-pointer touch-none"
               style={{ left: `${point.x}%`, top: `${point.y}%` }}
             />
           ))
@@ -441,6 +464,37 @@ export function DrawingCanvas({
             />
           );
         })()}
+
+      {/* Touch devices have no Enter key and no reliable double-click, so the
+          in-progress polygon needs explicit controls to close or discard it. */}
+      {draft?.type === 'polygon' && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+          <button
+            type="button"
+            disabled={draft.points.length < 3}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDraft(null);
+              finishPolygon(draft.points);
+            }}
+            className="rounded bg-gold text-wood-dark px-4 py-2 text-sm font-semibold shadow-lg disabled:opacity-50"
+          >
+            Finish shape ({draft.points.length})
+          </button>
+          <button
+            type="button"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDraft(null);
+            }}
+            className="rounded bg-parchment text-ink px-4 py-2 text-sm font-semibold shadow-lg"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   );
 }
