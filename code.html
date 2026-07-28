@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>The Scholar's Study Table - Gemara Learning</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&amp;family=Source+Sans+3:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#474836",
+                        "on-tertiary-fixed": "#241a00",
+                        "inverse-on-surface": "#ffede7",
+                        "tertiary-fixed": "#ffe088",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#827471",
+                        "on-secondary-container": "#636451",
+                        "primary-fixed-dim": "#e5beb5",
+                        "surface-variant": "#ffdbcf",
+                        "error": "#ba1a1a",
+                        "surface-container-high": "#ffe2d9",
+                        "error-container": "#ffdad6",
+                        "on-background": "#2e150b",
+                        "on-surface": "#2e150b",
+                        "primary": "#361f1a",
+                        "primary-fixed": "#ffdad2",
+                        "secondary": "#5e604d",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#574500",
+                        "secondary-fixed-dim": "#c8c8b0",
+                        "surface-container": "#ffe9e3",
+                        "outline-variant": "#d4c3bf",
+                        "surface-tint": "#755750",
+                        "surface-container-low": "#fff1ec",
+                        "on-tertiary-container": "#4f3e00",
+                        "inverse-surface": "#46291e",
+                        "on-primary-fixed": "#2b1611",
+                        "on-primary-fixed-variant": "#5c403a",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#ffdbcf",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#4e342e",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#cca830",
+                        "surface": "#fff8f6",
+                        "secondary-container": "#e1e1c9",
+                        "tertiary": "#735c00",
+                        "on-error": "#ffffff",
+                        "on-primary-container": "#c19c94",
+                        "inverse-primary": "#e5beb5",
+                        "on-surface-variant": "#504442",
+                        "background": "#fff8f6",
+                        "secondary-fixed": "#e4e4cc",
+                        "tertiary-fixed-dim": "#e9c349",
+                        "surface-dim": "#ffd0bf",
+                        "on-secondary-fixed": "#1b1d0e",
+                        "surface-bright": "#fff8f6",
+                        "wood-base": "#4E342E",
+                        "parchment-base": "#FFF8E1",
+                        "gold-accent": "#D4AF37"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter-text": "24px",
+                        "margin-page": "32px",
+                        "desktop-max-width": "1280px",
+                        "unit": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["\"Source Sans 3\""],
+                        "title-md": ["EB Garamond"],
+                        "body-md": ["\"Source Sans 3\""],
+                        "headline-lg-mobile": ["EB Garamond"],
+                        "label-sm": ["\"Source Sans 3\""],
+                        "headline-lg": ["EB Garamond"],
+                        "display-lg": ["EB Garamond"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "30px", "fontWeight": "400" }],
+                        "title-md": ["22px", { "lineHeight": "28px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>.wood-texture {
+    background-color: #4E342E;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuB_XYaf2c9v14cPymBA6THXEM7E0QqikF76ZxoRrzcWLPdK7yoLKNK72CvgvYrMN2pHn7k3x7ZzVrauY8sOAq2rcSmSj6tixRJzkiOeq6TOvDJGrk7ul6vPnpdi_QjEltdRKpU156sRAt92sNwEXWwFEA8ThLgfLQ8O-uSqjfdTdrDZz3Hbo--03ZlifVQ_6Cn20KL_QDjCbV-MX7Vu-MEpqKimUEOtn9ZNkE8ERt14Fe2mmJ1M-w2_zZ30WucfGIHa-AfJXU3JdryJ);
+    background-size: cover;
+    background-attachment: fixed
+    }
+.parchment-bg {
+    background-color: #FFF8E1;
+    box-shadow: inset 0 0 0 1px rgba(121, 85, 72, 0.2), 0 12px 24px -10px rgba(44, 30, 27, 0.3);
+    border-radius: 4px
+    }
+.clickable-zone {
+    transition: all 0.3s ease;
+    position: relative;
+    cursor: pointer
+    }
+.clickable-zone:hover {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    border-color: #D4AF37;
+    background-color: rgba(212, 175, 55, 0.05)
+    }
+.gemara-text-flow {
+    column-count: 3;
+    column-gap: 2rem;
+    column-rule: 1px solid #d4c3bf
+    }
+/* Layout overrides for classic layout */
+.layout-center {
+    grid-column: 2;
+    text-align: justify
+    }
+.layout-rashi {
+    grid-column: 3;
+    font-size: 0.9em;
+    color: #5c403a
+    }
+.layout-tosafot {
+    grid-column: 1;
+    font-size: 0.9em;
+    color: #5c403a
+    }</style>
+</head>
+<body class="bg-primary-container wood-texture min-h-screen flex flex-col font-body-md text-on-surface" data-alt="A highly detailed, rich, dark mahogany wood grain texture filling the screen. The wood appears polished and ancient, evoking the feeling of an antique scholar's desk in a traditional study hall. The lighting is warm and subtle, creating a sense of depth and history suitable for a high-end educational platform focused on classical texts.">
+<!-- TopNavBar -->
+<header class="bg-primary-container text-tertiary-fixed shadow-md border-b-2 border-outline w-full fixed top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-page max-w-desktop-max-width mx-auto h-20">
+<div class="flex items-center space-x-4">
+<img alt="The Scholar's Study Table" class="h-12 w-12 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAE8vApRRDvKaxPXy0ljWZy-CZ53STcnpJY_obM2-9G6kR9AEmcmMBwQ4mbaJDb4TeGNBWKGALjQ7ftbyNQv6e7W9CPh6n3tCtVp-o5DdEje_m1ELG958QQsCV4opmzSBtYeKuSpnMY0wfe6mvDmo_dM09r_GyMt8_yCjbE-BOFEZm4Z-xKIP0vxnECfK2R5IsyTfc5-kkj0kgqPQqW5DStnJa5xJEtbwU1c0A4fh6eSR7BWHkmUwFmMx9iiJwaoSxzCWkiYkTkEgKl"/>
+<span class="text-headline-lg font-headline-lg hidden md:block">The Scholar's Study Table</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile md:hidden">The Scholar's Study Table</span>
+</div>
+<nav class="hidden md:flex space-x-8 items-center">
+<a class="text-tertiary-fixed border-b-2 border-tertiary-fixed pb-1 text-title-md font-title-md hover:bg-primary transition-colors duration-200 px-2 rounded-t" href="#">Masechet</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed-dim text-title-md font-title-md hover:bg-primary transition-colors duration-200 px-2 rounded" href="#">My Library</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed-dim text-title-md font-title-md hover:bg-primary transition-colors duration-200 px-2 rounded" href="#">Daf Yomi</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed-dim text-title-md font-title-md hover:bg-primary transition-colors duration-200 px-2 rounded" href="#">Havruta</a>
+</nav>
+<div class="flex space-x-4 items-center">
+<button aria-label="Library" class="p-2 text-on-primary-container hover:text-tertiary-fixed-dim hover:bg-primary transition-colors duration-200 rounded-full hover:scale-95 duration-150 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu_book</span>
+</button>
+<button aria-label="Profile" class="p-2 text-on-primary-container hover:text-tertiary-fixed-dim hover:bg-primary transition-colors duration-200 rounded-full hover:scale-95 duration-150 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+</button>
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden p-2 text-on-primary-container hover:text-tertiary-fixed-dim rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Bookmarks) -->
+<aside class="fixed top-20 right-8 flex flex-col items-center w-16 py-4 space-y-6 z-40 bg-tertiary-container shadow-xl rounded-bl-full h-fit hidden lg:flex">
+<div class="text-title-md font-title-md text-on-tertiary-container mb-4 text-center mt-2 px-2" style="writing-mode: vertical-rl; text-orientation: mixed;">
+            Study Progress
+        </div>
+<nav class="flex flex-col space-y-4 items-center w-full relative">
+<!-- Decorative ribbon top -->
+<div class="absolute -top-10 w-8 h-12 bg-tertiary-container shadow-md" style="clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);"></div>
+<a aria-label="Current Daf" class="bg-tertiary text-on-tertiary rounded-full p-2 hover:bg-tertiary-fixed transition-all flex items-center justify-center group relative shadow-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">auto_stories</span>
+<span class="absolute right-full mr-4 bg-surface text-on-surface text-label-sm font-label-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-outline">Current Daf</span>
+</a>
+<a aria-label="Saved Sugyas" class="text-on-tertiary-container p-2 hover:bg-tertiary-fixed transition-all rounded-full flex items-center justify-center group relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bookmark_heart</span>
+<span class="absolute right-full mr-4 bg-surface text-on-surface text-label-sm font-label-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-outline">Saved Sugyas</span>
+</a>
+<a aria-label="Notes" class="text-on-tertiary-container p-2 hover:bg-tertiary-fixed transition-all rounded-full flex items-center justify-center group relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+<span class="absolute right-full mr-4 bg-surface text-on-surface text-label-sm font-label-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-outline">Notes</span>
+</a>
+<a aria-label="Library" class="text-on-tertiary-container p-2 hover:bg-tertiary-fixed transition-all rounded-full flex items-center justify-center group relative" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">library_books</span>
+<span class="absolute right-full mr-4 bg-surface text-on-surface text-label-sm font-label-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-outline">Library</span>
+</a>
+</nav>
+<button class="mt-8 bg-primary-container text-tertiary-fixed text-label-sm font-label-sm py-2 px-1 rounded transform -rotate-90 origin-center translate-y-12 whitespace-nowrap border border-tertiary-fixed shadow-md hover:bg-primary transition-colors">
+            Start Learning
+        </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow pt-28 pb-16 px-4 md:px-margin-page max-w-desktop-max-width mx-auto w-full relative">
+<!-- The Gemara Open Volume (Bento-ish structural layout within a skeuomorphic container) -->
+<div class="parchment-bg w-full min-h-[80vh] p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row gap-8">
+<!-- Center Fold Shadow -->
+<div class="absolute inset-y-0 left-1/2 w-8 -ml-4 bg-gradient-to-r from-transparent via-primary-container/20 to-transparent pointer-events-none z-10 hidden md:block"></div>
+<!-- Left Page (Tosafot / Text) -->
+<div class="w-full md:w-1/2 flex flex-col h-full relative z-0 pl-0 md:pl-4">
+<div class="border-b-2 border-outline-variant pb-4 mb-6 flex justify-between items-end">
+<h2 class="text-headline-lg font-headline-lg text-primary">Berakhot 2a</h2>
+<div class="flex space-x-2">
+<span class="px-3 py-1 bg-surface-variant text-on-surface-variant border border-outline rounded-sm text-label-sm font-label-sm shadow-sm">Perek 1</span>
+</div>
+</div>
+<div class="grid grid-cols-[1fr_2fr] gap-6 flex-grow">
+<!-- Tosafot Column (Outer margin) -->
+<div class="layout-tosafot pr-4 border-r border-outline-variant/30 flex flex-col space-y-4">
+<div class="clickable-zone border border-transparent p-2 rounded relative group" onclick="toggleTooltip('tooltip-tos-1')">
+<h4 class="text-title-md font-title-md text-on-primary-fixed-variant mb-2">תוספות</h4>
+<p class="text-body-md font-body-md text-on-surface-variant text-sm leading-relaxed">
+                                מאימתי קורין את שמע בערבין. פירש רש"י משעה שהכהנים נכנסים לאכול בתרומתן...
+                            </p>
+<!-- Tooltip/Overlay -->
+<div class="hidden absolute top-0 left-full ml-4 w-64 bg-surface p-4 shadow-xl border-t-2 border-tertiary-fixed z-50 rounded" id="tooltip-tos-1">
+<h5 class="text-title-md font-title-md text-primary mb-2">Tosafot: When to Read Shema</h5>
+<p class="text-body-md font-body-md text-on-surface text-sm mb-3">Tosafot questions Rashi's explanation linking the time to Kohanim eating Terumah.</p>
+<button class="bg-primary text-tertiary-fixed px-3 py-1 text-label-sm font-label-sm rounded flex items-center hover:bg-surface-tint transition">
+<span class="material-symbols-outlined text-[16px] mr-1">play_circle</span> Watch Explanation
+                                </button>
+</div>
+</div>
+</div>
+<!-- Main Text (Gemara) -->
+<div class="layout-center flex flex-col space-y-6">
+<div class="clickable-zone border border-transparent p-3 rounded group" onclick="toggleTooltip('tooltip-gemara-1')">
+<h3 class="text-headline-lg font-headline-lg text-on-background text-center mb-4 leading-loose font-bold tracking-wide">
+                                מֵאֵימָתַי קוֹרִין אֶת שְׁמַע בְּעַרְבִית
+                             </h3>
+<p class="text-body-lg font-body-lg text-on-surface leading-loose text-justify">
+                                מִשָּׁעָה שֶׁהַכֹּהֲנִים נִכְנָסִים לֶאֱכוֹל בִּתְרוּמָתָן עַד סוֹף הָאַשְׁמוּרָה הָרִאשׁוֹנָה, דִּבְרֵי רַבִּי אֱלִיעֶזֶר. וַחֲכָמִים אוֹמְרִים: עַד חֲצוֹת. רַבָּן גַּמְלִיאֵל אוֹמֵר: עַד שֶׁיַּעֲלֶה עַמּוּד הַשַּׁחַר.
+                             </p>
+<div class="hidden absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 bg-surface p-6 shadow-2xl border-t-4 border-tertiary-fixed z-50 rounded text-center" id="tooltip-gemara-1">
+<span class="material-symbols-outlined text-tertiary-fixed text-4xl mb-2">menu_book</span>
+<h5 class="text-title-md font-title-md text-primary mb-2">Mishnah: The Evening Shema</h5>
+<p class="text-body-md font-body-md text-on-surface text-sm mb-4">The Mishnah opens by asking for the earliest time one may recite the evening Shema, offering three differing opinions.</p>
+<div class="flex space-x-2 justify-center">
+<button class="bg-primary-container text-tertiary-fixed px-4 py-2 text-label-sm font-label-sm rounded flex items-center hover:bg-primary transition shadow-inner">
+                                        View Diagram
+                                    </button>
+</div>
+<button class="absolute top-2 right-2 text-outline hover:text-on-surface" onclick="event.stopPropagation(); toggleTooltip('tooltip-gemara-1')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Page (Rashi / Continuation) -->
+<div class="w-full md:w-1/2 flex flex-col h-full relative z-0 pr-0 md:pr-4 mt-8 md:mt-0">
+<div class="border-b-2 border-outline-variant pb-4 mb-6 flex justify-end items-end h-[52px]">
+<!-- Empty header for visual balance with left side -->
+</div>
+<div class="grid grid-cols-[2fr_1fr] gap-6 flex-grow">
+<!-- Main Text Continuation -->
+<div class="layout-center pl-4 border-l border-outline-variant/30">
+<div class="clickable-zone border border-transparent p-3 rounded group" onclick="toggleTooltip('tooltip-gemara-2')">
+<p class="text-body-lg font-body-lg text-on-surface leading-loose text-justify">
+                                מַעֲשֶׂה שֶׁבָּאוּ בָּנָיו מִבֵּית הַמִּשְׁתֶּה, אָמְרוּ לוֹ: "לֹא קָרִינוּ אֶת שְׁמַע". אָמַר לָהֶם: "אִם לֹא עָלָה עַמּוּד הַשַּׁחַר, חַיָּבִין אַתֶּם לִקְרוֹת".
+                            </p>
+</div>
+</div>
+<!-- Rashi Column (Outer margin right) -->
+<div class="layout-rashi flex flex-col space-y-4">
+<div class="clickable-zone border border-transparent p-2 rounded relative group" onclick="toggleTooltip('tooltip-rashi-1')">
+<h4 class="text-title-md font-title-md text-on-primary-fixed-variant mb-2">רש"י</h4>
+<p class="text-body-md font-body-md text-on-surface-variant text-sm leading-relaxed" style="font-family: 'Rashi Script', serif;">
+                                מאימתי - תנא אקרא קאי דכתיב בשכבך ובקומך...
+                            </p>
+</div>
+</div>
+</div>
+<!-- Bottom Study Tools Bar (Bento-style blocks resting on the page) -->
+<div class="mt-auto pt-8 border-t border-outline-variant">
+<h3 class="text-title-md font-title-md text-on-surface-variant mb-4 flex items-center">
+<span class="material-symbols-outlined mr-2">explore</span> Study Tools for this Amud
+                    </h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded shadow-sm border border-outline-variant hover:border-tertiary-fixed hover:shadow-md transition cursor-pointer flex items-center group">
+<div class="bg-primary-container text-tertiary-fixed p-2 rounded-full mr-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">ondemand_video</span>
+</div>
+<div>
+<h4 class="text-body-md font-body-md font-semibold text-on-surface">Video Shiurim</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">3 available</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded shadow-sm border border-outline-variant hover:border-tertiary-fixed hover:shadow-md transition cursor-pointer flex items-center group">
+<div class="bg-primary-container text-tertiary-fixed p-2 rounded-full mr-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">account_tree</span>
+</div>
+<div>
+<h4 class="text-body-md font-body-md font-semibold text-on-surface">Visual Diagrams</h4>
+<p class="text-label-sm font-label-sm text-on-surface-variant">Timeline of opinions</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary-container text-on-primary-container border-t-4 border-primary shadow-inner full-width bottom-0 z-10 mt-auto w-full relative">
+<div class="w-full py-8 px-margin-page flex flex-col md:flex-row justify-between items-center max-w-desktop-max-width mx-auto">
+<div class="flex flex-col items-center md:items-start mb-4 md:mb-0">
+<span class="text-title-md font-title-md text-tertiary-fixed mb-2">The Scholar's Study Table</span>
+<span class="text-label-sm font-label-sm">© 5784 The Scholar's Study Table. All Rights Reserved.</span>
+</div>
+<nav class="flex flex-wrap justify-center gap-6">
+<a class="text-on-primary-container hover:text-tertiary-fixed text-body-md font-body-md hover:text-tertiary-fixed-dim transition-colors" href="#">Archives</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed text-body-md font-body-md hover:text-tertiary-fixed-dim transition-colors" href="#">Glossary</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed text-body-md font-body-md hover:text-tertiary-fixed-dim transition-colors" href="#">Support</a>
+<a class="text-on-primary-container hover:text-tertiary-fixed text-body-md font-body-md hover:text-tertiary-fixed-dim transition-colors" href="#">Privacy</a>
+</nav>
+</div>
+</footer>
+<script>
+        function toggleTooltip(id) {
+            const tooltips = document.querySelectorAll('[id^="tooltip-"]');
+            tooltips.forEach(t => {
+                if(t.id !== id) {
+                    t.classList.add('hidden');
+                }
+            });
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.toggle('hidden');
+            }
+        }
+        
+        // Close tooltips when clicking outside
+        document.addEventListener('click', function(event) {
+            const isClickableZone = event.target.closest('.clickable-zone');
+            if (!isClickableZone) {
+                const tooltips = document.querySelectorAll('[id^="tooltip-"]');
+                tooltips.forEach(t => t.classList.add('hidden'));
+            }
+        });
+    </script>
+</body></html>
