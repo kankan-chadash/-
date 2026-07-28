@@ -7,6 +7,20 @@
   "imageWidth": 1788,
   "imageHeight": 2758,
   "createdAt": "2026-07-28T21:57:13.221Z",
-  "updatedAt": "2026-07-28T21:57:13.221Z",
-  "regions": []
+  "updatedAt": "2026-07-28T21:58:13.538Z",
+  "regions": [
+    {
+      "id": "d63672ad-9af7-4954-8877-5d9905ade76f",
+      "shape": "rectangle",
+      "coordinates": {
+        "x": 36.106240109490614,
+        "y": 0.9254124497435186,
+        "width": 32.93913861682563,
+        "height": 3.003604602800499
+      },
+      "contentType": "text",
+      "content": "זה דף מפרק הכונס שהוא הפרק השישי במסכת בבא קמא ",
+      "title": "מידע על הדף"
+    }
+  ]
 }
