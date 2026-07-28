@@ -10,10 +10,12 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
 import * as api from '../api/publicData';
 import type { Page } from '../types';
+import { SiteHeader } from '../components/Layout/SiteHeader';
+import { Bookshelf } from '../components/Library/Bookshelf';
+import { groupIntoBooks } from '../utils/library';
 
 export function ViewerHome() {
   const [pages, setPages] = useState<Page[] | null>(null);
@@ -26,37 +28,53 @@ export function ViewerHome() {
       .catch((err) => setError(err.message));
   }, []);
 
+  const books = useMemo(() => (pages ? groupIntoBooks(pages) : []), [pages]);
+
   return (
-    <div className="min-h-screen bg-wood">
-      <header className="border-b-2 border-gold/40 bg-wood-dark">
-        <div className="mx-auto max-w-5xl px-6 py-6">
-          <h1 className="font-serif text-3xl text-parchment">The Scholar's Study Table</h1>
-          <p className="text-parchment/70 mt-1">Browse Gemara pages with interactive study hotspots</p>
+    <div className="surface-wood min-h-screen">
+      <SiteHeader />
+
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <div className="mb-10 text-center">
+          <h1 className="font-serif text-4xl text-parchment sm:text-5xl">The Library</h1>
+          <p className="mx-auto mt-3 max-w-xl text-parchment/70">
+            Choose a volume to open it at its first daf.
+          </p>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        {error && <p className="text-red-300">Failed to load pages: {error}</p>}
-
-        {pages && pages.length === 0 && (
-          <p className="text-parchment/80">No pages have been published yet.</p>
+        {error && (
+          <p className="rounded border border-red-400/40 bg-red-950/40 p-4 text-center text-red-200">
+            Failed to load the library: {error}
+          </p>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {pages?.map((page) => (
-            <Link
-              key={page.id}
-              to={`/view/${page.id}`}
-              className="block rounded bg-parchment p-5 shadow-lg border-t-4 border-gold hover:-translate-y-0.5 transition-transform"
-            >
-              <h2 className="font-serif text-xl text-wood-dark">
-                {page.tractate} {page.daf}{page.side}
-              </h2>
-              <p className="text-ink-variant text-sm mt-1">Daf {page.daf}, Amud {page.side.toUpperCase()}</p>
-            </Link>
-          ))}
-        </div>
+        {!pages && !error && <ShelfSkeleton />}
+
+        {pages && pages.length === 0 && (
+          <p className="rounded border border-gold/30 bg-black/20 p-10 text-center text-parchment/80">
+            The shelves are still empty — no dapim have been published yet.
+          </p>
+        )}
+
+        {books.length > 0 && <Bookshelf books={books} />}
       </main>
+    </div>
+  );
+}
+
+function ShelfSkeleton() {
+  return (
+    <div aria-hidden>
+      <div className="flex h-60 items-end justify-center gap-3 rounded-t bg-black/25 px-8 shadow-inner sm:h-72">
+        {[80, 88, 72, 84, 76].map((h, i) => (
+          <div
+            key={i}
+            className="w-16 animate-pulse rounded-t-sm bg-white/5"
+            style={{ height: `${h}%` }}
+          />
+        ))}
+      </div>
+      <div className="surface-shelf h-5 rounded-b shadow-lg" />
     </div>
   );
 }
