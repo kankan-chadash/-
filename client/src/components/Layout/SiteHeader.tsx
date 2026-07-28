@@ -11,31 +11,59 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import logoUrl from '../../assets/logo.png';
 
 interface SiteHeaderProps {
-  /** Rendered at the end of the bar — page-specific controls (daf position, etc.). */
+  /** Rendered at the end of the bar — page-specific controls (מיקום הדף וכו'). */
   trailing?: ReactNode;
 }
 
+const NAV = [
+  { to: '/', label: 'הספרייה' },
+  { to: '/videos', label: 'שיעורים' },
+];
+
 export function SiteHeader({ trailing }: SiteHeaderProps) {
+  const { pathname } = useLocation();
+
   return (
     <header className="sticky top-0 z-40 border-b-2 border-gold/40 bg-wood-dark/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link
           to="/"
-          className="flex items-center gap-3 text-gold transition hover:brightness-110"
-          aria-label="The Scholar's Study Table — back to the library"
+          className="flex shrink-0 items-center gap-3 text-gold transition hover:brightness-110"
+          aria-label="שולחן הלימוד — לספרייה"
         >
-          <span
-            aria-hidden
-            className="flex h-9 w-9 items-center justify-center rounded border border-gold/40 bg-wood text-lg"
-          >
-            📖
-          </span>
-          <span className="font-serif text-lg sm:text-xl">The Scholar's Study Table</span>
+          <img
+            src={logoUrl}
+            alt=""
+            className="h-10 w-10 rounded border border-gold/40 bg-parchment object-contain p-0.5"
+          />
+          <span className="hidden font-serif text-lg sm:inline sm:text-xl">שולחן הלימוד</span>
         </Link>
-        {trailing}
+
+        <nav className="flex items-center gap-1 text-sm">
+          {NAV.map((item) => {
+            const active = item.to === '/' ? pathname === '/' : pathname.startsWith(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                aria-current={active ? 'page' : undefined}
+                className={`rounded px-3 py-1.5 transition ${
+                  active
+                    ? 'bg-gold/15 font-semibold text-gold'
+                    : 'text-parchment/70 hover:bg-white/5 hover:text-gold'
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="ms-auto">{trailing}</div>
       </div>
     </header>
   );

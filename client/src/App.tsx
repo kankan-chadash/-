@@ -16,9 +16,11 @@ import { GithubAdminAuthProvider } from './context/GithubAdminAuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { ViewerHome } from './pages/ViewerHome';
 import { ViewerPage } from './pages/ViewerPage';
+import { VideosPage } from './pages/VideosPage';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminPageEditor } from './pages/admin/AdminPageEditor';
+import { AdminVideos } from './pages/admin/AdminVideos';
 
 export default function App() {
   return (
@@ -28,6 +30,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ViewerHome />} />
             <Route path="/view/:pageId" element={<ViewerPage />} />
+            <Route path="/videos" element={<VideosPage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route
               path="/admin"
@@ -42,6 +45,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AdminPageEditor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/videos"
+              element={
+                <ProtectedRoute>
+                  <AdminVideos />
                 </ProtectedRoute>
               }
             />

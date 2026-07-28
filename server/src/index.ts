@@ -19,6 +19,7 @@ import authRouter from './routes/auth';
 import { publicPagesRouter } from './routes/pages';
 import adminPagesRouter from './routes/pages';
 import uploadRouter from './routes/upload';
+import { adminVideosRouter, publicVideosRouter } from './routes/videos';
 
 bootstrapAdmin();
 
@@ -33,7 +34,9 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 app.use('/api/auth', authRouter);
 app.use('/api', publicPagesRouter);
+app.use('/api', publicVideosRouter);
 app.use('/api/admin', adminPagesRouter);
+app.use('/api/admin', adminVideosRouter);
 app.use('/api/admin', uploadRouter);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

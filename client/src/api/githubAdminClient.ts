@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions, Region } from '../types';
+import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
 import type { CreatePageInput } from './client';
 import { deleteFile, getFile, putRawFile, putTextFile, readFileAsBase64 } from './githubApi';
 
@@ -22,6 +22,7 @@ import { deleteFile, getFile, putRawFile, putTextFile, readFileAsBase64 } from '
 const PAGES_INDEX_PATH = 'client/public/data/pages.json';
 const pagePath = (id: string) => `client/public/data/pages/${id}.json`;
 const imagePath = (filename: string) => `client/public/data/images/${filename}`;
+const VIDEOS_PATH = 'client/public/data/videos.json';
 
 function sortIndex(pages: Page[]): Page[] {
   return [...pages].sort(
@@ -41,14 +42,14 @@ export async function fetchAdminPages(token: string): Promise<Page[]> {
 
 export async function fetchAdminPage(token: string, id: string): Promise<PageWithRegions> {
   const file = await getFile(token, pagePath(id));
-  if (!file) throw new Error('Page not found');
+  if (!file) throw new Error('הדף לא נמצא');
   return JSON.parse(file.content) as PageWithRegions;
 }
 
 export async function createPage(token: string, input: CreatePageInput): Promise<PageWithRegions> {
   const { pages, sha } = await readIndex(token);
   if (pages.some((p) => p.tractate === input.tractate && p.daf === input.daf && p.side === input.side)) {
-    throw new Error('A page with this tractate, daf, and side already exists');
+    throw new Error('כבר קיים דף עם אותה מסכת, דף ועמוד');
   }
 
   const now = new Date().toISOString();
@@ -89,7 +90,7 @@ export async function updatePage(
   input: Partial<CreatePageInput>
 ): Promise<PageWithRegions> {
   const file = await getFile(token, pagePath(id));
-  if (!file) throw new Error('Page not found');
+  if (!file) throw new Error('הדף לא נמצא');
   const existing = JSON.parse(file.content) as PageWithRegions;
   const merged: Page = {
     id: existing.id,
@@ -132,7 +133,7 @@ export async function deletePage(token: string, id: string): Promise<void> {
 
 export async function saveRegions(token: string, pageId: string, regions: Region[]): Promise<PageWithRegions> {
   const file = await getFile(token, pagePath(pageId));
-  if (!file) throw new Error('Page not found');
+  if (!file) throw new Error('הדף לא נמצא');
   const existing = JSON.parse(file.content) as PageWithRegions;
   const updated: PageWithRegions = { ...existing, regions, updatedAt: new Date().toISOString() };
   await putTextFile(
@@ -152,4 +153,68 @@ export async function uploadImage(token: string, file: File): Promise<{ url: str
   await putRawFile(token, imagePath(filename), base64, `Upload image ${filename}`);
   // Relative path, matching the convention the static viewer's resolveAsset() expects.
   return { url: `data/images/${filename}` };
+}
+
+// --- Standalone videos (the rail on /videos) ---
+
+async function readVideos(token: string): Promise<{ videos: Video[]; sha?: string }> {
+  const file = await getFile(token, VIDEOS_PATH);
+  return { videos: file ? (JSON.parse(file.content) as Video[]) : [], sha: file?.sha };
+}
+
+function sortVideos(videos: Video[]): Video[] {
+  return [...videos].sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt));
+}
+
+async function writeVideos(token: string, videos: Video[], sha: string | undefined, message: string) {
+  await putTextFile(token, VIDEOS_PATH, JSON.stringify(sortVideos(videos), null, 2), message, sha);
+}
+
+export async function fetchAdminVideos(token: string): Promise<Video[]> {
+  const { videos } = await readVideos(token);
+  return sortVideos(videos);
+}
+
+export async function createVideo(token: string, input: VideoInput): Promise<Video> {
+  const { videos, sha } = await readVideos(token);
+  const now = new Date().toISOString();
+  const video: Video = {
+    id: crypto.randomUUID(),
+    title: input.title,
+    description: input.description ?? null,
+    url: input.url,
+    // Append to the end of the rail unless a position was given.
+    sortOrder: input.sortOrder ?? videos.reduce((max, v) => Math.max(max, v.sortOrder), -1) + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await writeVideos(token, [...videos, video], sha, `Add video: ${input.title}`);
+  return video;
+}
+
+export async function updateVideo(token: string, id: string, input: Partial<VideoInput>): Promise<Video> {
+  const { videos, sha } = await readVideos(token);
+  const existing = videos.find((v) => v.id === id);
+  if (!existing) throw new Error('השיעור לא נמצא');
+  const updated: Video = {
+    ...existing,
+    title: input.title ?? existing.title,
+    description: input.description !== undefined ? input.description : existing.description,
+    url: input.url ?? existing.url,
+    sortOrder: input.sortOrder ?? existing.sortOrder,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeVideos(
+    token,
+    videos.map((v) => (v.id === id ? updated : v)),
+    sha,
+    `Update video: ${updated.title}`
+  );
+  return updated;
+}
+
+export async function deleteVideo(token: string, id: string): Promise<void> {
+  const { videos, sha } = await readVideos(token);
+  if (!videos.some((v) => v.id === id)) return;
+  await writeVideos(token, videos.filter((v) => v.id !== id), sha, `Delete video ${id}`);
 }

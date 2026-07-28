@@ -55,3 +55,21 @@ export interface Page {
 export interface PageWithRegions extends Page {
   regions: Region[];
 }
+
+/** A standalone shiur, shown on the videos rail — not tied to any daf. */
+export interface Video {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoInput {
+  title: string;
+  description?: string | null;
+  url: string;
+  sortOrder?: number;
+}

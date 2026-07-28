@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { Page, PageRow, Region, RegionRow } from '../types';
+import { Page, PageRow, Region, RegionRow, Video, VideoRow } from '../types';
 
 export function mapPageRow(row: PageRow): Page {
   return {
@@ -35,6 +35,18 @@ export function mapRegionRow(row: RegionRow): Region {
     contentType: row.content_type,
     content: row.content,
     title: row.title,
+    sortOrder: row.sort_order,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapVideoRow(row: VideoRow): Video {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    url: row.url,
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

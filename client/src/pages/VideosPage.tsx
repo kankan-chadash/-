@@ -10,25 +10,24 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import * as api from '../api/publicData';
-import type { Page } from '../types';
+import type { Video } from '../types';
 import { SiteHeader } from '../components/Layout/SiteHeader';
-import { Bookshelf } from '../components/Library/Bookshelf';
-import { groupIntoBooks } from '../utils/library';
+import { VideoRail } from '../components/Videos/VideoRail';
+import { VideoModal } from '../components/Videos/VideoModal';
 
-export function ViewerHome() {
-  const [pages, setPages] = useState<Page[] | null>(null);
+export function VideosPage() {
+  const [videos, setVideos] = useState<Video[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [playing, setPlaying] = useState<Video | null>(null);
 
   useEffect(() => {
     api
-      .fetchPages()
-      .then(setPages)
+      .fetchVideos()
+      .then(setVideos)
       .catch((err) => setError(err.message));
   }, []);
-
-  const books = useMemo(() => (pages ? groupIntoBooks(pages) : []), [pages]);
 
   return (
     <div className="surface-wood min-h-screen">
@@ -36,45 +35,47 @@ export function ViewerHome() {
 
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <div className="mb-10 text-center">
-          <h1 className="font-serif text-4xl text-parchment sm:text-5xl">הספרייה</h1>
+          <h1 className="font-serif text-4xl text-parchment sm:text-5xl">שיעורים כלליים</h1>
           <p className="mx-auto mt-3 max-w-xl text-parchment/70">
-            בחרו כרך כדי לפתוח אותו בדף הראשון שלו.
+            מסילת השיעורים — בחרו שיעור כדי לצפות בו.
           </p>
         </div>
 
         {error && (
           <p className="rounded border border-red-400/40 bg-red-950/40 p-4 text-center text-red-200">
-            טעינת הספרייה נכשלה: {error}
+            טעינת השיעורים נכשלה: {error}
           </p>
         )}
 
-        {!pages && !error && <ShelfSkeleton />}
+        {!videos && !error && <RailSkeleton />}
 
-        {pages && pages.length === 0 && (
+        {videos && videos.length === 0 && (
           <p className="rounded border border-gold/30 bg-black/20 p-10 text-center text-parchment/80">
-            המדפים עדיין ריקים — לא פורסמו דפים.
+            המסילה עדיין ריקה — לא הועלו שיעורים כלליים.
           </p>
         )}
 
-        {books.length > 0 && <Bookshelf books={books} />}
+        {videos && videos.length > 0 && <VideoRail videos={videos} onSelect={setPlaying} />}
       </main>
+
+      {playing && <VideoModal video={playing} onClose={() => setPlaying(null)} />}
     </div>
   );
 }
 
-function ShelfSkeleton() {
+function RailSkeleton() {
   return (
     <div aria-hidden>
-      <div className="flex h-60 items-end justify-center gap-3 rounded-t bg-black/25 px-8 shadow-inner sm:h-72">
-        {[80, 88, 72, 84, 76].map((h, i) => (
+      <div className="rail-beam h-7 rounded-sm" />
+      <div className="flex gap-5 overflow-hidden px-2 pt-6">
+        {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="w-16 animate-pulse rounded-t-sm bg-white/5"
-            style={{ height: `${h}%` }}
+            className="shrink-0 animate-pulse rounded-lg border border-gold/15 bg-black/25"
+            style={{ width: 'min(19rem, 78vw)', height: '15rem' }}
           />
         ))}
       </div>
-      <div className="surface-shelf h-5 rounded-b shadow-lg" />
     </div>
   );
 }

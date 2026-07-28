@@ -20,7 +20,7 @@ interface RegionListProps {
 
 export function RegionList({ regions, selectedId, onSelect }: RegionListProps) {
   if (regions.length === 0) {
-    return <p className="text-sm text-ink-variant">No regions yet — draw one on the image.</p>;
+    return <p className="text-sm text-ink-variant">עדיין אין אזורים — סמנו אחד על התמונה.</p>;
   }
 
   return (
@@ -35,7 +35,7 @@ export function RegionList({ regions, selectedId, onSelect }: RegionListProps) {
             }`}
           >
             <span>
-              {index + 1}. {region.title || `Untitled ${region.shape}`}
+              {index + 1}. {region.title || (region.shape === 'rectangle' ? 'מלבן ללא שם' : 'מצולע ללא שם')}
             </span>
             <span className="text-xs uppercase text-ink-variant">{region.contentType}</span>
           </button>

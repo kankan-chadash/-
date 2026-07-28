@@ -44,7 +44,7 @@ export function AdminDashboard() {
   async function handleCreate(e: FormEvent) {
     e.preventDefault();
     if (!file) {
-      setError('Please choose a page image to upload');
+      setError('בחרו תמונת דף להעלאה');
       return;
     }
     setError(null);
@@ -65,14 +65,14 @@ export function AdminDashboard() {
       // URL so the editor can preview it immediately in this session.
       navigate(`/admin/pages/${page.id}`, { state: { previewImageUrl: URL.createObjectURL(file) } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create page');
+      setError(err instanceof Error ? err.message : 'יצירת הדף נכשלה');
     } finally {
       setIsCreating(false);
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this page and all of its regions? This cannot be undone.')) return;
+    if (!confirm('למחוק את הדף וכל האזורים שבו? לא ניתן לבטל את הפעולה.')) return;
     await api.deletePage(id);
     loadPages();
   }
@@ -81,11 +81,14 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-wood">
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto max-w-5xl px-6 py-5 flex items-center justify-between">
-          <h1 className="font-serif text-2xl text-parchment">Admin — Pages</h1>
+          <h1 className="font-serif text-2xl text-parchment">ניהול — דפים</h1>
           <div className="flex items-center gap-4 text-parchment/80 text-sm">
+            <Link to="/admin/videos" className="text-gold hover:underline">
+              שיעורים כלליים
+            </Link>
             <span>{username}</span>
             <button onClick={() => signOut()} className="text-gold hover:underline">
-              Sign out
+              יציאה
             </button>
           </div>
         </div>
@@ -93,21 +96,21 @@ export function AdminDashboard() {
 
       <main className="mx-auto max-w-5xl px-6 py-10 grid gap-8 md:grid-cols-[1fr_1.4fr]">
         <section className="bg-parchment rounded shadow-lg border-t-4 border-gold p-6 h-fit">
-          <h2 className="font-serif text-xl text-wood-dark mb-4">New Page</h2>
+          <h2 className="font-serif text-xl text-wood-dark mb-4">דף חדש</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <label className="block">
-              <span className="text-sm text-ink-variant">Tractate (Masechet)</span>
+              <span className="text-sm text-ink-variant">מסכת</span>
               <input
                 required
                 value={tractate}
                 onChange={(e) => setTractate(e.target.value)}
-                placeholder="Berakhot"
+                placeholder="ברכות"
                 className="mt-1 w-full rounded border border-outline bg-white px-3 py-2"
               />
             </label>
             <div className="flex gap-4">
               <label className="block flex-1">
-                <span className="text-sm text-ink-variant">Daf</span>
+                <span className="text-sm text-ink-variant">דף</span>
                 <input
                   type="number"
                   min={2}
@@ -118,7 +121,7 @@ export function AdminDashboard() {
                 />
               </label>
               <label className="block flex-1">
-                <span className="text-sm text-ink-variant">Amud (Side)</span>
+                <span className="text-sm text-ink-variant">עמוד</span>
                 <select
                   value={side}
                   onChange={(e) => setSide(e.target.value as 'a' | 'b')}
@@ -130,7 +133,7 @@ export function AdminDashboard() {
               </label>
             </div>
             <label className="block">
-              <span className="text-sm text-ink-variant">Page image</span>
+              <span className="text-sm text-ink-variant">תמונת הדף</span>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -147,31 +150,31 @@ export function AdminDashboard() {
               disabled={isCreating}
               className="w-full rounded bg-wood-dark text-gold py-2.5 font-semibold hover:bg-wood transition disabled:opacity-60"
             >
-              {isCreating ? 'Creating…' : 'Create & Edit Regions'}
+              {isCreating ? 'יוצר…' : 'יצירה ועריכת אזורים'}
             </button>
           </form>
         </section>
 
         <section className="bg-parchment rounded shadow-lg border-t-4 border-gold p-6">
-          <h2 className="font-serif text-xl text-wood-dark mb-4">Existing Pages</h2>
-          {pages.length === 0 && <p className="text-ink-variant text-sm">No pages yet.</p>}
+          <h2 className="font-serif text-xl text-wood-dark mb-4">דפים קיימים</h2>
+          {pages.length === 0 && <p className="text-ink-variant text-sm">עדיין אין דפים.</p>}
           <ul className="divide-y divide-outline/40">
             {pages.map((page) => (
               <li key={page.id} className="py-3 flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium text-ink">
-                    {page.tractate} {page.daf}{page.side}
+                    <bdi>{page.tractate}</bdi> {page.daf}{page.side}
                   </p>
                   <Link to={`/view/${page.id}`} className="text-xs text-ink-variant hover:underline">
-                    View public page
+                    צפייה בדף הציבורי
                   </Link>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Link to={`/admin/pages/${page.id}`} className="text-wood-dark font-semibold hover:underline">
-                    Edit
+                    עריכה
                   </Link>
                   <button onClick={() => handleDelete(page.id)} className="text-red-600 hover:underline">
-                    Delete
+                    מחיקה
                   </button>
                 </div>
               </li>
@@ -193,7 +196,7 @@ function readImageDimensions(file: File): Promise<{ width: number; height: numbe
     };
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error('Could not read image dimensions'));
+      reject(new Error('לא ניתן לקרוא את מידות התמונה'));
     };
     img.src = objectUrl;
   });

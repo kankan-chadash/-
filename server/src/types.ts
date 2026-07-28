@@ -82,3 +82,23 @@ export interface PageRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VideoRow {
+  id: string;
+  title: string;
+  description: string | null;
+  url: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}

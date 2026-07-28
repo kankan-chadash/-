@@ -35,7 +35,7 @@ export function ContentModal({ region, onClose }: ContentModalProps) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label={region.title ?? 'Content'}
+      aria-label={region.title ?? 'תוכן'}
     >
       <div
         className="relative w-full max-w-3xl max-h-[90vh] overflow-auto rounded bg-parchment shadow-2xl border-t-4 border-gold"
@@ -44,22 +44,22 @@ export function ContentModal({ region, onClose }: ContentModalProps) {
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
-          className="absolute top-3 right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-wood text-parchment hover:bg-wood-dark transition"
+          aria-label="סגירה"
+          className="absolute top-3 end-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-wood text-parchment hover:bg-wood-dark transition"
         >
           ✕
         </button>
 
         <div className="p-6">
           {region.title && (
-            <h3 className="font-serif text-2xl text-wood-dark mb-4 pr-8">{region.title}</h3>
+            <h3 className="font-serif text-2xl text-wood-dark mb-4 pe-8">{region.title}</h3>
           )}
 
           {region.contentType === 'video' && (
             <div className="aspect-video w-full">
               <iframe
                 src={toEmbedUrl(region.content)}
-                title={region.title ?? 'Video'}
+                title={region.title ?? 'סרטון'}
                 className="h-full w-full rounded"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
@@ -70,7 +70,7 @@ export function ContentModal({ region, onClose }: ContentModalProps) {
           {region.contentType === 'image' && (
             <img
               src={region.content}
-              alt={region.title ?? 'Illustration'}
+              alt={region.title ?? 'איור'}
               className="max-h-[70vh] w-full rounded object-contain"
             />
           )}

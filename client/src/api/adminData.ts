@@ -14,7 +14,7 @@ import { useMemo } from 'react';
 import * as expressApi from './client';
 import * as githubApi from './githubAdminClient';
 import type { CreatePageInput } from './client';
-import type { Page, PageWithRegions, Region } from '../types';
+import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
 import { useGithubAdminAuth } from '../context/GithubAdminAuthContext';
 
 export const isGithubAdminMode = import.meta.env.VITE_ADMIN_MODE === 'github';
@@ -27,6 +27,10 @@ export interface AdminApi {
   deletePage: (id: string) => Promise<void>;
   saveRegions: (pageId: string, regions: Region[]) => Promise<PageWithRegions>;
   uploadImage: (file: File) => Promise<{ url: string }>;
+  fetchAdminVideos: () => Promise<Video[]>;
+  createVideo: (input: VideoInput) => Promise<Video>;
+  updateVideo: (id: string, input: Partial<VideoInput>) => Promise<Video>;
+  deleteVideo: (id: string) => Promise<void>;
 }
 
 /**
@@ -43,7 +47,7 @@ export function useAdminApi(): AdminApi {
 
     const token = githubAuth.token;
     if (!token) {
-      const notSignedIn = () => Promise.reject(new Error('Not signed in to GitHub'));
+      const notSignedIn = () => Promise.reject(new Error('לא מחוברים ל-GitHub'));
       return {
         fetchAdminPages: notSignedIn,
         fetchAdminPage: notSignedIn,
@@ -52,6 +56,10 @@ export function useAdminApi(): AdminApi {
         deletePage: notSignedIn,
         saveRegions: notSignedIn,
         uploadImage: notSignedIn,
+        fetchAdminVideos: notSignedIn,
+        createVideo: notSignedIn,
+        updateVideo: notSignedIn,
+        deleteVideo: notSignedIn,
       };
     }
 
@@ -63,6 +71,10 @@ export function useAdminApi(): AdminApi {
       deletePage: (id) => githubApi.deletePage(token, id),
       saveRegions: (pageId, regions) => githubApi.saveRegions(token, pageId, regions),
       uploadImage: (file) => githubApi.uploadImage(token, file),
+      fetchAdminVideos: () => githubApi.fetchAdminVideos(token),
+      createVideo: (input) => githubApi.createVideo(token, input),
+      updateVideo: (id, input) => githubApi.updateVideo(token, id, input),
+      deleteVideo: (id) => githubApi.deleteVideo(token, id),
     };
   }, [githubAuth.token]);
 }
