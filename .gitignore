@@ -12,6 +12,8 @@ server/data/*.sqlite-journal
 
 # client
 client/dist/
+# Contact sheet written by scripts/makeIcons.mjs --sheet, for checking the icons.
+client/icon-sheet.png
 
 # misc
 .DS_Store

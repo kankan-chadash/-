@@ -116,6 +116,42 @@ are worth knowing before editing the UI:
   `<bdi>`. `formatPageTitle()` remains for alt text and aria-labels, where bidi doesn't apply.
 - Arrow-key and swipe navigation in the viewer are mirrored: the *next* daf lies to the left.
 
+## The tab icon
+
+`public/logo.png` can't serve as a favicon as it stands: the mark sits on an **opaque white square**
+and fills only about a fifth of its own canvas. At tab size that renders as a bright white tile with
+a speck in the middle — and the tile clashes with every dark tab bar it lands on, so the icon looks
+different on each machine depending on the theme behind it.
+
+So the tab icon is a **round medallion**: the mark cropped to its own ink, on a disc with a gold rim.
+That way the icon brings its own background and no longer depends on what's behind it — the disc
+reads against a dark bar, the rim draws the edge against a light one, and it looks the same either
+way.
+
+`scripts/makeIcons.mjs` draws the set from `logo.png`:
+
+```bash
+node scripts/makeIcons.mjs          # rewrite public/icon-*.png + apple-touch-icon.png
+node scripts/makeIcons.mjs --sheet  # plus a contact sheet, to check them (git-ignored)
+```
+
+Notes on it:
+
+- **Each size is drawn separately**, not scaled from one master — a rim that suits 64px swallows the
+  mark at 16px, and the mark has to be proportionally larger to survive there at all. The per-size
+  numbers are in `METRICS`.
+- **The ink box is measured, not hardcoded**, so a redrawn logo with different margins still comes
+  out centred and correctly sized.
+- **The rim is painted over the art**, because the art's own white square is wider than the disc and
+  would otherwise hide the rim completely. (It did, on the first attempt.)
+- **`apple-touch-icon.png` is a full-bleed square, not a circle.** iOS applies its own mask and puts
+  black behind anything transparent, so a circular one would come out clipped on black.
+- It's a one-off tool rather than an npm script: it needs Playwright's Chromium to do the
+  compositing and PNG encoding, and the build shouldn't depend on a browser.
+
+The header logo is a separate thing and is left alone — it sits on the site's own parchment plate,
+where the white background was never a problem.
+
 ## Videos rail
 
 `/videos` shows standalone educational videos as plaques hanging from an aged wooden beam, scrolled
