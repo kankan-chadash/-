@@ -44,6 +44,8 @@ export function mapRegionRow(row: RegionRow): Region {
     contentType: row.content_type,
     content: row.content,
     title: row.title,
+    badgeX: row.badge_x,
+    badgeY: row.badge_y,
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

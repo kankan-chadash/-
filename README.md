@@ -220,23 +220,20 @@ hotspot in full, tinted and dashed by type — off by default so the daf isn't c
 remembered in `localStorage` once chosen, since a reader who wants the map shouldn't have to
 re-enable it on every daf. A legend above the page says what the colours mean.
 
-### Badges dodge the text
+### Placing a badge
 
-A badge that lands on a letter hides the very words it points at, so placement isn't fixed — it's
-derived from the scan itself. `utils/inkMap.ts` draws the page onto a canvas once, reduces it to a
-coarse "is there ink in this cell" grid, and `useBadgePlacements` then slides each badge **along x
-only** to the nearest cell run that carries no ink. A daf always has channels — the outer margins
-and the gutters between the commentary columns — so a clear spot is never far.
+By default a badge sits at the region's reading-order corner (its right edge, since the page is
+RTL) or, for a polygon, at the centre of its vertices. That often lands on the text it points at,
+and which spot is clear is a judgement about that particular daf — so it's placed by hand rather
+than guessed.
 
-Only x moves, so a badge stays on the line it belongs to. Candidates are tried outward from the
-anchor in both directions, so the badge travels as little as possible; if a row really is inked all
-the way across, it settles for the emptiest spot rather than pretending it found a clear one.
+In the region editor, every region shows its badge as a draggable handle; the selected region's is
+ringed in gold. Drag it anywhere on the page and the position is stored on the region as
+`badgeX`/`badgeY` (percent, like every other coordinate here). "איפוס למיקום ברירת המחדל" in the
+region panel clears them and returns the badge to the shape's default.
 
-The ink threshold is derived from each page's own paper tone rather than being a fixed constant,
-since scans run from bright white to deep sepia.
-
-If the pixels can't be read at all — a cross-origin image taints the canvas — every badge simply
-uses its unadjusted anchor. This only ever improves placement; it can't break it.
+Both fields are nullable and absent on regions saved before this existed, so an untouched region
+keeps using its default — nothing needed backfilling.
 
 All badges (rectangle and polygon alike) are positioned over the page rather than inside their
 shapes: a polygon can't host a child, and inside the SVG a badge would be stretched by

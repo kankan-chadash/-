@@ -10,16 +10,15 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { PolygonCoordinates, RectangleCoordinates, Region } from '../../types';
 import {
   REGION_TYPE_LABELS,
   RegionTypeIcon,
+  badgePosition,
   regionAriaLabel,
   regionTypeClass,
 } from './regionTypes';
-import { useBadgePlacements } from '../../hooks/useBadgePlacements';
 
 interface HotspotOverlayProps {
   imageUrl: string;
@@ -49,11 +48,6 @@ export function HotspotOverlay({
   activeRegionId,
   showAll = false,
 }: HotspotOverlayProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  // Badges dodge the text: each one is nudged along x to the nearest patch of
-  // page that carries no ink, so it never buries the words it points at.
-  const placements = useBadgePlacements(imageUrl, regions, containerRef);
-
   const rectangles = regions.filter((r) => r.shape === 'rectangle');
   const polygons = regions.filter((r) => r.shape === 'polygon');
 
@@ -69,7 +63,7 @@ export function HotspotOverlay({
   }
 
   return (
-    <div ref={containerRef} className="relative w-full leading-none select-none">
+    <div className="relative w-full leading-none select-none">
       <img src={imageUrl} alt={imageAlt} className="block w-full h-auto" draggable={false} />
 
       {rectangles.map((region) => {
@@ -133,10 +127,10 @@ export function HotspotOverlay({
 
       {/* Every badge is placed over the page rather than inside its shape: a
           polygon can't host a child, and inside the SVG a badge would be
-          stretched by preserveAspectRatio="none" along with the shapes. */}
+          stretched by preserveAspectRatio="none" along with the shapes.
+          Its spot is whatever the editor set, or the shape's default. */}
       {regions.map((region) => {
-        const spot = placements.get(region.id);
-        if (!spot) return null;
+        const spot = badgePosition(region);
         return (
           <span
             key={`${region.id}-badge`}

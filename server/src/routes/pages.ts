@@ -167,8 +167,8 @@ adminPagesRouter.put('/pages/:id/regions', (req, res) => {
   const replaceRegions = db.transaction((pageId: string, regions: typeof parsed.data.regions) => {
     db.prepare('DELETE FROM regions WHERE page_id = ?').run(pageId);
     const insert = db.prepare(
-      `INSERT INTO regions (id, page_id, shape, coordinates, content_type, content, title, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO regions (id, page_id, shape, coordinates, content_type, content, title, badge_x, badge_y, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     regions.forEach((region, index) => {
       insert.run(
@@ -179,6 +179,8 @@ adminPagesRouter.put('/pages/:id/regions', (req, res) => {
         region.contentType,
         region.content,
         region.title ?? null,
+        region.badgeX ?? null,
+        region.badgeY ?? null,
         region.sortOrder ?? index
       );
     });

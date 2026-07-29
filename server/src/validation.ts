@@ -31,6 +31,8 @@ export const regionInputSchema = z
     contentType: z.enum(['video', 'image', 'text']),
     content: z.string().min(1),
     title: z.string().nullable().optional(),
+    badgeX: percent.nullable().optional(),
+    badgeY: percent.nullable().optional(),
     sortOrder: z.number().int().optional(),
   })
   .superRefine((val, ctx) => {

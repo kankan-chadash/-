@@ -13,6 +13,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PolygonCoordinates, PolygonPoint, RectangleCoordinates } from '../../types';
 import type { EditableRegion } from './types';
+import { RegionTypeIcon, badgePosition, regionTypeClass } from '../Overlay/regionTypes';
 import {
   type Corner,
   clamp,
@@ -45,7 +46,8 @@ type DragState =
       startMouse: PolygonPoint;
       startPoints: PolygonCoordinates;
     }
-  | { type: 'move-vertex'; regionId: string; vertexIndex: number };
+  | { type: 'move-vertex'; regionId: string; vertexIndex: number }
+  | { type: 'move-badge'; regionId: string };
 
 type Draft =
   | { type: 'rectangle'; start: PolygonPoint; current: PolygonPoint }
@@ -67,6 +69,9 @@ function applyDrag(ds: DragState, region: EditableRegion, point: PolygonPoint): 
     const dx = point.x - ds.startMouse.x;
     const dy = point.y - ds.startMouse.y;
     return { ...region, coordinates: movePolygon(ds.startPoints, dx, dy) };
+  }
+  if (ds.type === 'move-badge') {
+    return { ...region, badgeX: clamp(point.x, 0, 100), badgeY: clamp(point.y, 0, 100) };
   }
   const points = [...(region.coordinates as PolygonCoordinates)];
   points[ds.vertexIndex] = { x: clamp(point.x, 0, 100), y: clamp(point.y, 0, 100) };
@@ -274,6 +279,10 @@ export function DrawingCanvas({
     beginDrag(e, region, { type: 'move-vertex', regionId: region.id, vertexIndex });
   }
 
+  function startMoveBadge(e: React.PointerEvent, region: EditableRegion) {
+    beginDrag(e, region, { type: 'move-badge', regionId: region.id });
+  }
+
   function deleteVertex(e: React.MouseEvent, region: EditableRegion, vertexIndex: number) {
     e.stopPropagation();
     const points = region.coordinates as PolygonCoordinates;
@@ -464,6 +473,27 @@ export function DrawingCanvas({
             />
           );
         })()}
+
+      {/* Where each region's type badge will sit for readers. Drag one to place
+          it by hand — the default corner or centre often lands on the text. */}
+      {mode === 'select' &&
+        regions.map((region) => {
+          const spot = badgePosition(region);
+          const isSelected = region.id === selectedId;
+          return (
+            <div
+              key={`${region.id}-badge`}
+              onPointerDown={(e) => startMoveBadge(e, region)}
+              title="גררו כדי למקם את הסמל"
+              className={`editor-badge ${regionTypeClass(region.contentType)} ${
+                isSelected ? 'editor-badge-selected' : ''
+              }`}
+              style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
+            >
+              <RegionTypeIcon contentType={region.contentType} />
+            </div>
+          );
+        })}
 
       {/* Touch devices have no Enter key and no reliable double-click, so the
           in-progress polygon needs explicit controls to close or discard it. */}
