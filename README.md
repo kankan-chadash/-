@@ -198,6 +198,31 @@ Volumes managed at `/admin/upcoming` stand alongside them, faded and banded "ב�
 coming. They're rendered as plain `<div>`s rather than buttons, so they aren't focusable or
 clickable — the styling and the semantics agree that there's nothing to open yet.
 
+## Marking hotspots by type
+
+A reader needs to know what's behind a hotspot before spending a click on it, so every region
+carries a small always-visible badge naming its kind:
+
+| | | |
+|---|---|---|
+| **סרטון** | video | teal, play glyph |
+| **הסבר** | text | ochre, lines glyph |
+| **תמונה** | image | plum, picture glyph |
+
+**Each type has its own glyph as well as its own hue.** Colour alone would leave anyone who can't
+separate these hues with no way to tell a video from an explanation — the icon carries the meaning
+and the colour reinforces it. The type is in the `aria-label` too, so it's announced rather than
+merely seen. The hues are muted deliberately: they sit on a scanned parchment page without
+shouting over the text.
+
+The region body itself stays discreet until hovered. **"הצגת כל האזורים בדף"** outlines every
+hotspot in full, tinted and dashed by type — off by default so the daf isn't cluttered, and
+remembered in `localStorage` once chosen, since a reader who wants the map shouldn't have to
+re-enable it on every daf. A legend above the page says what the colours mean.
+
+Polygon badges are rendered outside the SVG and positioned over the page: inside it they'd be
+stretched by `preserveAspectRatio="none"` along with the shapes they sit on.
+
 ## Public viewer
 
 The image renders at `width: 100%; height: auto` inside a `position: relative` wrapper. Rectangle

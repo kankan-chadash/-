@@ -451,17 +451,37 @@ h1, h2, h3, h4 {
   }
 }
 
+/* --- Hotspots on a daf ---------------------------------------------------- */
+
+/* Each content type gets its own hue AND its own glyph. Colour alone would
+   leave anyone who can't separate these hues with no way to tell a video from
+   an explanation, so the icon carries the meaning and the colour reinforces it.
+   Hues are muted to sit on a scanned parchment page without shouting. */
+.hotspot-video {
+  --hotspot: 14 116 144;      /* teal */
+}
+.hotspot-text {
+  --hotspot: 161 98 7;        /* ochre */
+}
+.hotspot-image {
+  --hotspot: 126 34 130;      /* plum */
+}
+
 div.hotspot-region {
   position: absolute;
   cursor: pointer;
   border: 1px solid transparent;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  border-radius: 2px;
+  transition: background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
 div.hotspot-region:hover,
+div.hotspot-region:focus-visible,
 div.hotspot-region.is-active {
-  border-color: rgba(212, 175, 55, 0.85);
-  background-color: rgba(212, 175, 55, 0.14);
+  border-color: rgb(var(--hotspot) / 0.9);
+  background-color: rgb(var(--hotspot) / 0.16);
+  box-shadow: 0 0 0 2px rgb(var(--hotspot) / 0.18);
+  outline: none;
 }
 
 polygon.hotspot-region {
@@ -470,13 +490,97 @@ polygon.hotspot-region {
   stroke: transparent;
   stroke-width: 1px;
   pointer-events: auto;
-  transition: fill 0.15s ease, stroke 0.15s ease;
+  transition: fill 0.16s ease, stroke 0.16s ease;
 }
 
 polygon.hotspot-region:hover,
+polygon.hotspot-region:focus-visible,
 polygon.hotspot-region.is-active {
-  fill: rgba(212, 175, 55, 0.14);
-  stroke: rgba(212, 175, 55, 0.85);
+  fill: rgb(var(--hotspot) / 0.16);
+  stroke: rgb(var(--hotspot) / 0.9);
+  outline: none;
+}
+
+/* "Show every region": the whole shape is outlined, not just marked. Kept
+   lighter than the hover state so hovering still reads as a change. */
+div.hotspot-region.is-revealed {
+  border-color: rgb(var(--hotspot) / 0.65);
+  border-style: dashed;
+  background-color: rgb(var(--hotspot) / 0.09);
+}
+polygon.hotspot-region.is-revealed {
+  fill: rgb(var(--hotspot) / 0.09);
+  stroke: rgb(var(--hotspot) / 0.65);
+  stroke-dasharray: 3 2;
+}
+
+/* The always-visible marker: what tells you a hotspot is here and what kind it
+   is, without clicking or even hovering. Small enough not to bury the daf. */
+.hotspot-badge {
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 2px;
+  z-index: 5;
+  display: flex;
+  height: 17px;
+  width: 17px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: 3px;
+  color: #fff;
+  background-color: rgb(var(--hotspot) / 0.82);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+  opacity: 0.75;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+.hotspot-region:hover .hotspot-badge,
+.hotspot-region.is-active .hotspot-badge,
+.hotspot-region.is-revealed .hotspot-badge {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Polygons can't host a child, so their badge is positioned over the page and
+   centred on the shape. It's clickable, since it may cover the shape's middle.
+   The base class pins itself with inset-inline-start; that has to be cleared or
+   it fights the inline left/top and the badge snaps to the page edge. */
+.hotspot-badge-floating {
+  inset-inline-start: auto;
+  inset-inline-end: auto;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.hotspot-badge-floating:hover,
+.hotspot-badge-floating.is-revealed {
+  opacity: 1;
+}
+
+/* --- Region legend / reveal toggle ---------------------------------------- */
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  color: var(--color-parchment);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 248, 246, 0.14);
+}
+.legend-swatch {
+  display: flex;
+  height: 15px;
+  width: 15px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 3px;
+  color: #fff;
+  background-color: rgb(var(--hotspot) / 0.95);
 }
 
 /* --- The video rail ------------------------------------------------------- */
