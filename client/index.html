@@ -2,8 +2,22 @@
 <html lang="he" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./logo.png" />
-    <link rel="apple-touch-icon" href="./logo.png" />
+    <!--
+      The tab icon is a round medallion, not the bare logo: the logo art is a
+      mark on an opaque white square, which shows up as a white tile on any dark
+      tab bar and fills only a fifth of its own canvas. Cropped to its ink on a
+      disc with a gold rim it carries its own background instead — the disc reads
+      against a dark bar, the rim draws the edge against a light one. Sizes are
+      drawn individually (see scripts/makeIcons.mjs) rather than scaled from one
+      file, since a rim that suits 64px swallows the mark at 16px.
+    -->
+    <link rel="icon" type="image/png" sizes="16x16" href="./icon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./icon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="./icon-48.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="./icon-64.png" />
+    <!-- Full-bleed square: iOS applies its own mask and puts black behind
+         anything transparent, so a circle would come out clipped on black. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#361f1a" />
     <meta
