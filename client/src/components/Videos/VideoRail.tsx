@@ -24,10 +24,29 @@ interface VideoRailProps {
 /** Alternating hang angles so the plaques look hung by hand, not laid out by a grid. */
 const HANG_ANGLES = [-1.6, 1.1, -0.7, 1.8, -1.2, 0.8];
 
+/**
+ * How far one press of an arrow carries the rail: exactly one plaque and the
+ * gap after it, measured off the rail rather than assumed, since a card is
+ * `min(19rem, 78vw)` and so is a different width on a phone than on a desk.
+ */
+function stepDistance(track: HTMLElement): number {
+  const slot = track.querySelector<HTMLElement>('.rail-slot');
+  if (!slot) return track.clientWidth;
+  const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+  // offsetWidth, not the bounding rect: the plaques are scaled while they settle
+  // in and again on hover, and a transformed rect would make the step wander.
+  return slot.offsetWidth + gap;
+}
+
 export function VideoRail({ videos, onSelect }: VideoRailProps) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
+
+  // Where the arrows are steering to, which is not where the rail has got to
+  // yet. Pressing again mid-glide has to add a plaque to the destination, the
+  // way a second flick of a wheel adds to a scroll already running.
+  const targetRef = useRef<number | null>(null);
 
   const syncEdges = useCallback(() => {
     const el = trackRef.current;
@@ -42,19 +61,44 @@ export function VideoRail({ videos, onSelect }: VideoRailProps) {
     syncEdges();
     const el = trackRef.current;
     if (!el) return;
+    // Once a hand is on the rail it decides where the rail is; anything the
+    // arrows were still steering towards is stale.
+    const release = () => {
+      targetRef.current = null;
+    };
     el.addEventListener('scroll', syncEdges, { passive: true });
+    el.addEventListener('pointerdown', release, { passive: true });
+    el.addEventListener('wheel', release, { passive: true });
     window.addEventListener('resize', syncEdges);
     return () => {
       el.removeEventListener('scroll', syncEdges);
+      el.removeEventListener('pointerdown', release);
+      el.removeEventListener('wheel', release);
       window.removeEventListener('resize', syncEdges);
     };
   }, [syncEdges, videos.length]);
 
-  function scrollByCards(cards: number) {
+  // An arrow carries the rail onward the way a scroll would: one plaque further,
+  // smoothly, in the direction the page reads.
+  function nudge(direction: 1 | -1) {
     const el = trackRef.current;
     if (!el) return;
-    const step = el.clientWidth * 0.8 * cards;
-    el.scrollBy({ left: step, behavior: 'smooth' });
+
+    // The rail reads right-to-left, and in RTL scrollLeft runs from 0 down to
+    // -(scrollWidth - clientWidth). Moving onward there means going negative, so
+    // the step takes its sign from the writing direction rather than assuming LTR.
+    const sign = getComputedStyle(el).direction === 'rtl' ? -1 : 1;
+    const limit = el.scrollWidth - el.clientWidth;
+    const [low, high] = sign < 0 ? [-limit, 0] : [0, limit];
+
+    // Measured from where we're headed, not from where we are — otherwise a
+    // second press mid-glide reads the half-finished position and the two
+    // presses collapse into one plaque of travel.
+    const from = targetRef.current ?? el.scrollLeft;
+    const to = Math.min(high, Math.max(low, from + sign * direction * stepDistance(el)));
+
+    targetRef.current = to;
+    el.scrollTo({ left: to, behavior: 'smooth' });
   }
 
   return (
@@ -87,8 +131,8 @@ export function VideoRail({ videos, onSelect }: VideoRailProps) {
 
       {videos.length > 1 && (
         <>
-          <RailArrow side="start" disabled={atStart} onClick={() => scrollByCards(-1)} />
-          <RailArrow side="end" disabled={atEnd} onClick={() => scrollByCards(1)} />
+          <RailArrow side="start" disabled={atStart} onClick={() => nudge(-1)} />
+          <RailArrow side="end" disabled={atEnd} onClick={() => nudge(1)} />
         </>
       )}
     </div>
