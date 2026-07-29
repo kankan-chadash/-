@@ -20,7 +20,7 @@ import type {
   VideoInput,
 } from '../types';
 import type { CreatePageInput } from './client';
-import { deleteFile, getFile, putRawFile, putTextFile, readFileAsBase64 } from './githubApi';
+import { putRawFile, readFileAsBase64, readJsonFile, removeJsonFile, updateJsonFile } from './githubApi';
 
 // Admin data layer for VITE_ADMIN_MODE=github builds: every read/write goes
 // straight to the same client/public/data/** files the static viewer (see
@@ -39,28 +39,23 @@ function sortIndex(pages: Page[]): Page[] {
   );
 }
 
-async function readIndex(token: string): Promise<{ pages: Page[]; sha?: string }> {
-  const file = await getFile(token, PAGES_INDEX_PATH);
-  return { pages: file ? (JSON.parse(file.content) as Page[]) : [], sha: file?.sha };
-}
-
 export async function fetchAdminPages(token: string): Promise<Page[]> {
-  const { pages } = await readIndex(token);
-  return sortIndex(pages);
+  return sortIndex((await readJsonFile<Page[]>(token, PAGES_INDEX_PATH)) ?? []);
 }
 
 export async function fetchAdminPage(token: string, id: string): Promise<PageWithRegions> {
-  const file = await getFile(token, pagePath(id));
-  if (!file) throw new Error('הדף לא נמצא');
-  return JSON.parse(file.content) as PageWithRegions;
+  const page = await readJsonFile<PageWithRegions>(token, pagePath(id));
+  if (!page) throw new Error('הדף לא נמצא');
+  return page;
 }
 
 export async function createPage(token: string, input: CreatePageInput): Promise<PageWithRegions> {
-  const { pages, sha } = await readIndex(token);
-  if (pages.some((p) => p.tractate === input.tractate && p.daf === input.daf && p.side === input.side)) {
+  const existingIndex = (await readJsonFile<Page[]>(token, PAGES_INDEX_PATH)) ?? [];
+  if (existingIndex.some((p) => p.tractate === input.tractate && p.daf === input.daf && p.side === input.side)) {
     throw new Error('כבר קיים דף עם אותה מסכת, דף ועמוד');
   }
 
+  // Fixed before the first attempt: a retry must add the same page, not a new one.
   const now = new Date().toISOString();
   const id = crypto.randomUUID();
   const page: Page = {
@@ -75,19 +70,14 @@ export async function createPage(token: string, input: CreatePageInput): Promise
     updatedAt: now,
   };
   const pageWithRegions: PageWithRegions = { ...page, regions: [] };
+  const label = `${input.tractate} ${input.daf}${input.side}`;
 
-  await putTextFile(
-    token,
-    pagePath(id),
-    JSON.stringify(pageWithRegions, null, 2),
-    `Add page: ${input.tractate} ${input.daf}${input.side}`
-  );
-  await putTextFile(
+  await updateJsonFile<PageWithRegions>(token, pagePath(id), () => pageWithRegions, `Add page: ${label}`);
+  await updateJsonFile<Page[]>(
     token,
     PAGES_INDEX_PATH,
-    JSON.stringify(sortIndex([...pages, page]), null, 2),
-    `Add page to index: ${input.tractate} ${input.daf}${input.side}`,
-    sha
+    (index) => sortIndex([...(index ?? []).filter((p) => p.id !== id), page]),
+    `Add page to index: ${label}`
   );
 
   return pageWithRegions;
@@ -98,10 +88,9 @@ export async function updatePage(
   id: string,
   input: Partial<CreatePageInput>
 ): Promise<PageWithRegions> {
-  const file = await getFile(token, pagePath(id));
-  if (!file) throw new Error('הדף לא נמצא');
-  const existing = JSON.parse(file.content) as PageWithRegions;
-  const merged: Page = {
+  const updatedAt = new Date().toISOString();
+
+  const merge = (existing: Page): Page => ({
     id: existing.id,
     tractate: input.tractate ?? existing.tractate,
     daf: input.daf ?? existing.daf,
@@ -110,49 +99,50 @@ export async function updatePage(
     imageWidth: input.imageWidth !== undefined ? input.imageWidth : existing.imageWidth,
     imageHeight: input.imageHeight !== undefined ? input.imageHeight : existing.imageHeight,
     createdAt: existing.createdAt,
-    updatedAt: new Date().toISOString(),
-  };
-  const updated: PageWithRegions = { ...merged, regions: existing.regions };
+    updatedAt,
+  });
 
-  await putTextFile(token, pagePath(id), JSON.stringify(updated, null, 2), `Update page ${id}`, file.sha);
+  const updated = await updateJsonFile<PageWithRegions>(
+    token,
+    pagePath(id),
+    (existing) => {
+      if (!existing) throw new Error('הדף לא נמצא');
+      return { ...merge(existing), regions: existing.regions };
+    },
+    `Update page ${id}`
+  );
 
-  const { pages, sha } = await readIndex(token);
-  const nextIndex = pages.map((p) => (p.id === id ? merged : p));
-  await putTextFile(token, PAGES_INDEX_PATH, JSON.stringify(sortIndex(nextIndex), null, 2), `Update page ${id} in index`, sha);
+  await updateJsonFile<Page[]>(
+    token,
+    PAGES_INDEX_PATH,
+    (index) => sortIndex((index ?? []).map((p) => (p.id === id ? merge(p) : p))),
+    `Update page ${id} in index`
+  );
 
   return updated;
 }
 
 export async function deletePage(token: string, id: string): Promise<void> {
-  const file = await getFile(token, pagePath(id));
-  if (file) {
-    await deleteFile(token, pagePath(id), file.sha, `Delete page ${id}`);
-  }
-  const { pages, sha } = await readIndex(token);
-  if (sha) {
-    await putTextFile(
-      token,
-      PAGES_INDEX_PATH,
-      JSON.stringify(sortIndex(pages.filter((p) => p.id !== id)), null, 2),
-      `Remove page ${id} from index`,
-      sha
-    );
-  }
+  await removeJsonFile(token, pagePath(id), `Delete page ${id}`);
+  await updateJsonFile<Page[]>(
+    token,
+    PAGES_INDEX_PATH,
+    (index) => sortIndex((index ?? []).filter((p) => p.id !== id)),
+    `Remove page ${id} from index`
+  );
 }
 
 export async function saveRegions(token: string, pageId: string, regions: Region[]): Promise<PageWithRegions> {
-  const file = await getFile(token, pagePath(pageId));
-  if (!file) throw new Error('הדף לא נמצא');
-  const existing = JSON.parse(file.content) as PageWithRegions;
-  const updated: PageWithRegions = { ...existing, regions, updatedAt: new Date().toISOString() };
-  await putTextFile(
+  const updatedAt = new Date().toISOString();
+  return updateJsonFile<PageWithRegions>(
     token,
     pagePath(pageId),
-    JSON.stringify(updated, null, 2),
-    `Update regions for page ${pageId} (${regions.length} region${regions.length === 1 ? '' : 's'})`,
-    file.sha
+    (existing) => {
+      if (!existing) throw new Error('הדף לא נמצא');
+      return { ...existing, regions, updatedAt };
+    },
+    `Update regions for page ${pageId} (${regions.length} region${regions.length === 1 ? '' : 's'})`
   );
-  return updated;
 }
 
 export async function uploadImage(token: string, file: File): Promise<{ url: string }> {
@@ -166,101 +156,125 @@ export async function uploadImage(token: string, file: File): Promise<{ url: str
 
 // --- Standalone videos (the rail on /videos) ---
 
-async function readVideos(token: string): Promise<{ videos: Video[]; sha?: string }> {
-  const file = await getFile(token, VIDEOS_PATH);
-  return { videos: file ? (JSON.parse(file.content) as Video[]) : [], sha: file?.sha };
-}
-
 function sortVideos(videos: Video[]): Video[] {
   return [...videos].sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt));
 }
 
-async function writeVideos(token: string, videos: Video[], sha: string | undefined, message: string) {
-  await putTextFile(token, VIDEOS_PATH, JSON.stringify(sortVideos(videos), null, 2), message, sha);
-}
-
 export async function fetchAdminVideos(token: string): Promise<Video[]> {
-  const { videos } = await readVideos(token);
-  return sortVideos(videos);
+  return sortVideos((await readJsonFile<Video[]>(token, VIDEOS_PATH)) ?? []);
 }
 
 export async function createVideo(token: string, input: VideoInput): Promise<Video> {
-  const { videos, sha } = await readVideos(token);
+  // Identity and timestamps are fixed up front so a retry adds the same video
+  // rather than a second one; only the position is read off the current list.
   const now = new Date().toISOString();
-  const video: Video = {
-    id: crypto.randomUUID(),
-    title: input.title,
-    description: input.description ?? null,
-    url: input.url,
-    // Append to the end of the rail unless a position was given.
-    sortOrder: input.sortOrder ?? videos.reduce((max, v) => Math.max(max, v.sortOrder), -1) + 1,
-    createdAt: now,
-    updatedAt: now,
-  };
-  await writeVideos(token, [...videos, video], sha, `Add video: ${input.title}`);
-  return video;
+  const id = crypto.randomUUID();
+  let created: Video | null = null;
+
+  await updateJsonFile<Video[]>(
+    token,
+    VIDEOS_PATH,
+    (current) => {
+      const videos = (current ?? []).filter((v) => v.id !== id);
+      created = {
+        id,
+        title: input.title,
+        description: input.description ?? null,
+        url: input.url,
+        // Append to the end of the rail unless a position was given.
+        sortOrder: input.sortOrder ?? videos.reduce((max, v) => Math.max(max, v.sortOrder), -1) + 1,
+        createdAt: now,
+        updatedAt: now,
+      };
+      return sortVideos([...videos, created]);
+    },
+    `Add video: ${input.title}`
+  );
+
+  return created!;
 }
 
 export async function updateVideo(token: string, id: string, input: Partial<VideoInput>): Promise<Video> {
-  const { videos, sha } = await readVideos(token);
-  const existing = videos.find((v) => v.id === id);
-  if (!existing) throw new Error('הסרטון לא נמצא');
-  const updated: Video = {
-    ...existing,
-    title: input.title ?? existing.title,
-    description: input.description !== undefined ? input.description : existing.description,
-    url: input.url ?? existing.url,
-    sortOrder: input.sortOrder ?? existing.sortOrder,
-    updatedAt: new Date().toISOString(),
-  };
-  await writeVideos(
+  const updatedAt = new Date().toISOString();
+  let saved: Video | null = null;
+
+  await updateJsonFile<Video[]>(
     token,
-    videos.map((v) => (v.id === id ? updated : v)),
-    sha,
-    `Update video: ${updated.title}`
+    VIDEOS_PATH,
+    (current) => {
+      const videos = current ?? [];
+      const existing = videos.find((v) => v.id === id);
+      if (!existing) throw new Error('הסרטון לא נמצא');
+      saved = {
+        ...existing,
+        title: input.title ?? existing.title,
+        description: input.description !== undefined ? input.description : existing.description,
+        url: input.url ?? existing.url,
+        sortOrder: input.sortOrder ?? existing.sortOrder,
+        updatedAt,
+      };
+      return sortVideos(videos.map((v) => (v.id === id ? saved! : v)));
+    },
+    `Update video: ${input.title ?? id}`
   );
-  return updated;
+
+  return saved!;
 }
 
 export async function deleteVideo(token: string, id: string): Promise<void> {
-  const { videos, sha } = await readVideos(token);
-  if (!videos.some((v) => v.id === id)) return;
-  await writeVideos(token, videos.filter((v) => v.id !== id), sha, `Delete video ${id}`);
+  await updateJsonFile<Video[]>(
+    token,
+    VIDEOS_PATH,
+    (current) => sortVideos((current ?? []).filter((v) => v.id !== id)),
+    `Delete video ${id}`
+  );
+}
+
+/** Lays the rail out in the given order, in one commit rather than one per move. */
+export async function reorderVideos(token: string, orderedIds: string[]): Promise<Video[]> {
+  const updatedAt = new Date().toISOString();
+  return updateJsonFile<Video[]>(
+    token,
+    VIDEOS_PATH,
+    (current) => sortVideos(applyOrder(current ?? [], orderedIds, updatedAt)),
+    'Reorder videos'
+  );
 }
 
 // --- Upcoming volumes (the greyed-out spines on the shelf) ---
-
-async function readUpcoming(token: string): Promise<{ books: UpcomingBook[]; sha?: string }> {
-  const file = await getFile(token, UPCOMING_PATH);
-  return { books: file ? (JSON.parse(file.content) as UpcomingBook[]) : [], sha: file?.sha };
-}
 
 function sortUpcoming(books: UpcomingBook[]): UpcomingBook[] {
   return [...books].sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt));
 }
 
-async function writeUpcoming(token: string, books: UpcomingBook[], sha: string | undefined, message: string) {
-  await putTextFile(token, UPCOMING_PATH, JSON.stringify(sortUpcoming(books), null, 2), message, sha);
-}
-
 export async function fetchAdminUpcomingBooks(token: string): Promise<UpcomingBook[]> {
-  const { books } = await readUpcoming(token);
-  return sortUpcoming(books);
+  return sortUpcoming((await readJsonFile<UpcomingBook[]>(token, UPCOMING_PATH)) ?? []);
 }
 
 export async function createUpcomingBook(token: string, input: UpcomingBookInput): Promise<UpcomingBook> {
-  const { books, sha } = await readUpcoming(token);
   const now = new Date().toISOString();
-  const book: UpcomingBook = {
-    id: crypto.randomUUID(),
-    tractate: input.tractate,
-    note: input.note ?? null,
-    sortOrder: input.sortOrder ?? books.reduce((max, b) => Math.max(max, b.sortOrder), -1) + 1,
-    createdAt: now,
-    updatedAt: now,
-  };
-  await writeUpcoming(token, [...books, book], sha, `Announce upcoming volume: ${input.tractate}`);
-  return book;
+  const id = crypto.randomUUID();
+  let created: UpcomingBook | null = null;
+
+  await updateJsonFile<UpcomingBook[]>(
+    token,
+    UPCOMING_PATH,
+    (current) => {
+      const books = (current ?? []).filter((b) => b.id !== id);
+      created = {
+        id,
+        tractate: input.tractate,
+        note: input.note ?? null,
+        sortOrder: input.sortOrder ?? books.reduce((max, b) => Math.max(max, b.sortOrder), -1) + 1,
+        createdAt: now,
+        updatedAt: now,
+      };
+      return sortUpcoming([...books, created]);
+    },
+    `Announce upcoming volume: ${input.tractate}`
+  );
+
+  return created!;
 }
 
 export async function updateUpcomingBook(
@@ -268,27 +282,69 @@ export async function updateUpcomingBook(
   id: string,
   input: Partial<UpcomingBookInput>
 ): Promise<UpcomingBook> {
-  const { books, sha } = await readUpcoming(token);
-  const existing = books.find((b) => b.id === id);
-  if (!existing) throw new Error('הכרך לא נמצא');
-  const updated: UpcomingBook = {
-    ...existing,
-    tractate: input.tractate ?? existing.tractate,
-    note: input.note !== undefined ? input.note : existing.note,
-    sortOrder: input.sortOrder ?? existing.sortOrder,
-    updatedAt: new Date().toISOString(),
-  };
-  await writeUpcoming(
+  const updatedAt = new Date().toISOString();
+  let saved: UpcomingBook | null = null;
+
+  await updateJsonFile<UpcomingBook[]>(
     token,
-    books.map((b) => (b.id === id ? updated : b)),
-    sha,
-    `Update upcoming volume: ${updated.tractate}`
+    UPCOMING_PATH,
+    (current) => {
+      const books = current ?? [];
+      const existing = books.find((b) => b.id === id);
+      if (!existing) throw new Error('הכרך לא נמצא');
+      saved = {
+        ...existing,
+        tractate: input.tractate ?? existing.tractate,
+        note: input.note !== undefined ? input.note : existing.note,
+        sortOrder: input.sortOrder ?? existing.sortOrder,
+        updatedAt,
+      };
+      return sortUpcoming(books.map((b) => (b.id === id ? saved! : b)));
+    },
+    `Update upcoming volume: ${input.tractate ?? id}`
   );
-  return updated;
+
+  return saved!;
 }
 
 export async function deleteUpcomingBook(token: string, id: string): Promise<void> {
-  const { books, sha } = await readUpcoming(token);
-  if (!books.some((b) => b.id === id)) return;
-  await writeUpcoming(token, books.filter((b) => b.id !== id), sha, `Remove upcoming volume ${id}`);
+  await updateJsonFile<UpcomingBook[]>(
+    token,
+    UPCOMING_PATH,
+    (current) => sortUpcoming((current ?? []).filter((b) => b.id !== id)),
+    `Remove upcoming volume ${id}`
+  );
+}
+
+/** Lays the shelf out in the given order, in one commit rather than one per move. */
+export async function reorderUpcomingBooks(token: string, orderedIds: string[]): Promise<UpcomingBook[]> {
+  const updatedAt = new Date().toISOString();
+  return updateJsonFile<UpcomingBook[]>(
+    token,
+    UPCOMING_PATH,
+    (current) => sortUpcoming(applyOrder(current ?? [], orderedIds, updatedAt)),
+    'Reorder upcoming volumes'
+  );
+}
+
+/**
+ * Renumbers `sortOrder` to match `orderedIds`.
+ *
+ * Anything the caller didn't mention keeps its relative place after the ones it
+ * did — so a reorder computed against a slightly older list still lands
+ * sensibly if a row was added elsewhere in the meantime.
+ */
+function applyOrder<T extends { id: string; sortOrder: number; updatedAt: string }>(
+  items: T[],
+  orderedIds: string[],
+  updatedAt: string
+): T[] {
+  const rank = new Map(orderedIds.map((id, i) => [id, i]));
+  const unmentioned = items.filter((item) => !rank.has(item.id)).sort((a, b) => a.sortOrder - b.sortOrder);
+  unmentioned.forEach((item, i) => rank.set(item.id, orderedIds.length + i));
+
+  return items.map((item) => {
+    const sortOrder = rank.get(item.id)!;
+    return sortOrder === item.sortOrder ? item : { ...item, sortOrder, updatedAt };
+  });
 }

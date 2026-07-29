@@ -15,6 +15,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import type { UpcomingBook } from '../../types';
 import { useAdminApi } from '../../api/adminData';
+import { PublishNote } from '../../components/Admin/PublishNote';
 import { routes } from '../../routes';
 
 export function AdminUpcoming() {
@@ -23,6 +24,7 @@ export function AdminUpcoming() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<UpcomingBook | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const [tractate, setTractate] = useState('');
   const [note, setNote] = useState('');
@@ -51,47 +53,73 @@ export function AdminUpcoming() {
     e.preventDefault();
     setError(null);
     setBusy(true);
+    const input = { tractate, note: note.trim() || null };
+    const wasEditing = editing;
     try {
-      const input = { tractate, note: note.trim() || null };
-      if (editing) await api.updateUpcomingBook(editing.id, input);
-      else await api.createUpcomingBook(input);
+      // Show the change on the shelf list at once; the commit follows.
+      if (wasEditing) {
+        setBooks((current) =>
+          current.map((b) => (b.id === wasEditing.id ? { ...b, ...input } : b))
+        );
+      }
       resetForm();
-      load();
+      if (wasEditing) await api.updateUpcomingBook(wasEditing.id, input);
+      else setBooks(await appended(api.createUpcomingBook(input)));
+      setSavedAt(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'שמירת הכרך נכשלה');
+      load(); // the optimistic list is no longer trustworthy
     } finally {
       setBusy(false);
     }
+  }
+
+  /** Resolves to the list with a newly created volume on the end. */
+  async function appended(pending: Promise<UpcomingBook>): Promise<UpcomingBook[]> {
+    const created = await pending;
+    return [...books.filter((b) => b.id !== created.id), created];
   }
 
   async function handleDelete(book: UpcomingBook) {
     if (!confirm(`להסיר את "${book.tractate}" מהמדף? לא ניתן לבטל את הפעולה.`)) return;
     setError(null);
+    const before = books;
+    setBooks(books.filter((b) => b.id !== book.id));
+    if (editing?.id === book.id) resetForm();
     try {
       await api.deleteUpcomingBook(book.id);
-      if (editing?.id === book.id) resetForm();
-      load();
+      setSavedAt(Date.now());
     } catch (err) {
+      setBooks(before); // put it back where it was
       setError(err instanceof Error ? err.message : 'הסרת הכרך נכשלה');
     }
   }
 
-  /** Moves a volume one place along the shelf by swapping sort positions. */
+  /**
+   * Moves a volume one place along the shelf.
+   *
+   * The list reorders on the spot and the whole new order goes up as a single
+   * write, so a run of moves is a run of instant reorderings rather than a
+   * queue of round trips — and, in GitHub mode, one commit per move instead of
+   * two, which means one deploy.
+   */
   async function move(book: UpcomingBook, delta: number) {
     const from = books.findIndex((b) => b.id === book.id);
     const to = from + delta;
     if (to < 0 || to >= books.length) return;
+
+    const before = books;
+    const next = [...books];
+    [next[from], next[to]] = [next[to], next[from]];
+    setBooks(next);
     setError(null);
-    setBusy(true);
+
     try {
-      const other = books[to];
-      await api.updateUpcomingBook(book.id, { sortOrder: other.sortOrder });
-      await api.updateUpcomingBook(other.id, { sortOrder: book.sortOrder });
-      load();
+      await api.reorderUpcomingBooks(next.map((b) => b.id));
+      setSavedAt(Date.now());
     } catch (err) {
+      setBooks(before);
       setError(err instanceof Error ? err.message : 'שינוי הסדר נכשל');
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -137,6 +165,7 @@ export function AdminUpcoming() {
             </label>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
+            <PublishNote savedAt={savedAt} />
 
             <div className="flex gap-2">
               <button
@@ -174,7 +203,7 @@ export function AdminUpcoming() {
                 <div className="flex shrink-0 items-center gap-1 text-sm">
                   <button
                     onClick={() => move(book, -1)}
-                    disabled={i === 0 || busy}
+                    disabled={i === 0}
                     aria-label="הזזה אחורה"
                     className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
                   >
@@ -182,7 +211,7 @@ export function AdminUpcoming() {
                   </button>
                   <button
                     onClick={() => move(book, 1)}
-                    disabled={i === books.length - 1 || busy}
+                    disabled={i === books.length - 1}
                     aria-label="הזזה קדימה"
                     className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
                   >

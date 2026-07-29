@@ -39,10 +39,33 @@ export interface AdminApi {
   createVideo: (input: VideoInput) => Promise<Video>;
   updateVideo: (id: string, input: Partial<VideoInput>) => Promise<Video>;
   deleteVideo: (id: string) => Promise<void>;
+  /** Puts the rail in this order. One write in GitHub mode, so one deploy. */
+  reorderVideos: (orderedIds: string[]) => Promise<unknown>;
   fetchAdminUpcomingBooks: () => Promise<UpcomingBook[]>;
   createUpcomingBook: (input: UpcomingBookInput) => Promise<UpcomingBook>;
   updateUpcomingBook: (id: string, input: Partial<UpcomingBookInput>) => Promise<UpcomingBook>;
   deleteUpcomingBook: (id: string) => Promise<void>;
+  /** Puts the shelf in this order. One write in GitHub mode, so one deploy. */
+  reorderUpcomingBooks: (orderedIds: string[]) => Promise<unknown>;
+}
+
+/**
+ * Reordering over the Express backend, which has no bulk endpoint: renumber
+ * each row that actually moved. Rows are separate records there, so this costs
+ * nothing beyond the requests — unlike GitHub mode, where every write is a
+ * commit and therefore a deploy, which is why that mode does it in one.
+ */
+function reorderOverExpress<T extends { id: string; sortOrder: number }>(
+  fetchAll: () => Promise<T[]>,
+  update: (id: string, input: { sortOrder: number }) => Promise<unknown>
+) {
+  return async (orderedIds: string[]) => {
+    const current = await fetchAll();
+    const by = new Map(current.map((item) => [item.id, item]));
+    await Promise.all(
+      orderedIds.map((id, i) => (by.get(id)?.sortOrder === i ? null : update(id, { sortOrder: i })))
+    );
+  };
 }
 
 /**
@@ -55,7 +78,16 @@ export function useAdminApi(): AdminApi {
   const githubAuth = useGithubAdminAuth();
 
   return useMemo(() => {
-    if (!isGithubAdminMode) return expressApi;
+    if (!isGithubAdminMode) {
+      return {
+        ...expressApi,
+        reorderVideos: reorderOverExpress(expressApi.fetchAdminVideos, expressApi.updateVideo),
+        reorderUpcomingBooks: reorderOverExpress(
+          expressApi.fetchAdminUpcomingBooks,
+          expressApi.updateUpcomingBook
+        ),
+      };
+    }
 
     const token = githubAuth.token;
     if (!token) {
@@ -72,10 +104,12 @@ export function useAdminApi(): AdminApi {
         createVideo: notSignedIn,
         updateVideo: notSignedIn,
         deleteVideo: notSignedIn,
+        reorderVideos: notSignedIn,
         fetchAdminUpcomingBooks: notSignedIn,
         createUpcomingBook: notSignedIn,
         updateUpcomingBook: notSignedIn,
         deleteUpcomingBook: notSignedIn,
+        reorderUpcomingBooks: notSignedIn,
       };
     }
 
@@ -91,10 +125,12 @@ export function useAdminApi(): AdminApi {
       createVideo: (input) => githubApi.createVideo(token, input),
       updateVideo: (id, input) => githubApi.updateVideo(token, id, input),
       deleteVideo: (id) => githubApi.deleteVideo(token, id),
+      reorderVideos: (ids) => githubApi.reorderVideos(token, ids),
       fetchAdminUpcomingBooks: () => githubApi.fetchAdminUpcomingBooks(token),
       createUpcomingBook: (input) => githubApi.createUpcomingBook(token, input),
       updateUpcomingBook: (id, input) => githubApi.updateUpcomingBook(token, id, input),
       deleteUpcomingBook: (id) => githubApi.deleteUpcomingBook(token, id),
+      reorderUpcomingBooks: (ids) => githubApi.reorderUpcomingBooks(token, ids),
     };
   }, [githubAuth.token]);
 }

@@ -364,6 +364,55 @@ flowchart LR
    meantime, but won't be reachable at its real URL — e.g. in a second tab, or after a reload —
    until that deploy finishes).
 
+#### Writing against a cache that lags (why saves used to fail)
+
+GitHub's Contents API serves reads from a cache that **lags behind writes**: a `GET` issued moments
+after a `PUT` can still hand back the *previous* blob's sha. Writing with that sha is rejected —
+`409`, or `422 "sha wasn't supplied"` — and the admin panel used to surface that as
+*"…השתנה ב-GitHub מאז שנטען כאן. רעננו ונסו שוב"*.
+
+Refreshing didn't help, because the refresh read the same lagging cache. Three things followed
+from it, and all three were reported as separate bugs:
+
+- **Reordering always failed.** A move was two writes to one file — swap A's position, then swap
+  B's — and the second read a sha the first had just invalidated.
+- **Deletions "didn't take".** The delete committed, but the list reloaded from the stale cache and
+  the row reappeared, so it looked like nothing had happened. Deleting a second thing then failed
+  outright.
+- **Saving regions twice in a row failed**, for the same reason as a reorder.
+
+Four things fix it, in `githubApi.ts`:
+
+**Remember what we wrote.** Every successful write returns the new blob sha, so `lastWritten` keeps
+it and the next write doesn't have to ask. This is only ever a shortcut past a read whose answer we
+already know — if it turns out to be wrong (another admin, another tab), the write conflicts and we
+read for real.
+
+**Retry conflicts instead of reporting them.** `updateJsonFile(path, mutate, message)` re-reads
+*genuinely* current content (cache-busted) and re-applies the change on top, up to four times. This
+is why `mutate` describes a change rather than returning a snapshot: "drop the row with this id"
+survives a retry, "here is the list I saw a moment ago" would silently undo whoever got there
+first. Ids and timestamps are therefore fixed *before* the first attempt, so a retry adds the same
+row rather than a second one.
+
+**One write at a time per file.** The admin list now updates optimistically, so an admin can
+comfortably click twice before the first commit lands. Two writes in flight would both read the
+same starting point and the second would erase the first, so writes to a path queue behind each
+other and each sees the last one's result.
+
+**Reorder in a single write.** The whole new order goes up at once instead of two swaps — which
+also halves the commits, and so the deploys.
+
+Reads (`readJsonFile`) prefer `lastWritten` too, which is what stops a just-deleted row from
+reappearing. Every read also sends `cache: 'no-store'`, so the browser's own cache isn't a second
+copy of the same problem.
+
+**What "immediate" can and can't mean here.** A save is a commit, so it is stored the moment the
+button returns — but readers see it only after Pages rebuilds, about a minute later. The admin
+panel now says so (`PublishNote`) rather than leaving an admin to check the site, see the old
+version, and conclude the save failed. The list itself updates instantly and rolls back if the
+write fails, so the panel never shows a state the repo doesn't have.
+
 **Security, read this before using it:**
 - Anyone with the URL can *open* `/admin/login` (GitHub Pages can't restrict who can load a page
   unless you're on GitHub Enterprise) — but without your token, they can't do anything: every

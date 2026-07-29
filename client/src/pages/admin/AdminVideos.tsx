@@ -15,6 +15,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import type { Video } from '../../types';
 import { useAdminApi } from '../../api/adminData';
+import { PublishNote } from '../../components/Admin/PublishNote';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { routes } from '../../routes';
 
@@ -24,6 +25,7 @@ export function AdminVideos() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [editing, setEditing] = useState<Video | null>(null);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
 
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
@@ -55,14 +57,23 @@ export function AdminVideos() {
     e.preventDefault();
     setError(null);
     setBusy(true);
+    const input = { title, url, description: description.trim() || null };
+    const wasEditing = editing;
     try {
-      const input = { title, url, description: description.trim() || null };
-      if (editing) await api.updateVideo(editing.id, input);
-      else await api.createVideo(input);
+      // Show the change on the rail list at once; the commit follows.
+      if (wasEditing) {
+        setVideos((current) => current.map((v) => (v.id === wasEditing.id ? { ...v, ...input } : v)));
+      }
       resetForm();
-      load();
+      if (wasEditing) await api.updateVideo(wasEditing.id, input);
+      else {
+        const created = await api.createVideo(input);
+        setVideos((current) => [...current.filter((v) => v.id !== created.id), created]);
+      }
+      setSavedAt(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'שמירת הסרטון נכשלה');
+      load(); // the optimistic list is no longer trustworthy
     } finally {
       setBusy(false);
     }
@@ -71,32 +82,43 @@ export function AdminVideos() {
   async function handleDelete(video: Video) {
     if (!confirm(`למחוק את "${video.title}"? לא ניתן לבטל את הפעולה.`)) return;
     setError(null);
+    const before = videos;
+    setVideos(videos.filter((v) => v.id !== video.id));
+    if (editing?.id === video.id) resetForm();
     try {
       await api.deleteVideo(video.id);
-      if (editing?.id === video.id) resetForm();
-      load();
+      setSavedAt(Date.now());
     } catch (err) {
+      setVideos(before); // put it back where it was
       setError(err instanceof Error ? err.message : 'מחיקת הסרטון נכשלה');
     }
   }
 
-  /** Moves a video one slot along the rail by swapping sort positions. */
+  /**
+   * Moves a video one slot along the rail.
+   *
+   * The list reorders on the spot and the whole new order goes up as a single
+   * write, so a run of moves is a run of instant reorderings rather than a
+   * queue of round trips — and, in GitHub mode, one commit per move instead of
+   * two, which means one deploy.
+   */
   async function move(video: Video, delta: number) {
-    const ordered = [...videos];
-    const from = ordered.findIndex((v) => v.id === video.id);
+    const from = videos.findIndex((v) => v.id === video.id);
     const to = from + delta;
-    if (to < 0 || to >= ordered.length) return;
+    if (to < 0 || to >= videos.length) return;
+
+    const before = videos;
+    const next = [...videos];
+    [next[from], next[to]] = [next[to], next[from]];
+    setVideos(next);
     setError(null);
-    setBusy(true);
+
     try {
-      const other = ordered[to];
-      await api.updateVideo(video.id, { sortOrder: other.sortOrder });
-      await api.updateVideo(other.id, { sortOrder: video.sortOrder });
-      load();
+      await api.reorderVideos(next.map((v) => v.id));
+      setSavedAt(Date.now());
     } catch (err) {
+      setVideos(before);
       setError(err instanceof Error ? err.message : 'שינוי הסדר נכשל');
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -152,6 +174,7 @@ export function AdminVideos() {
             </label>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
+            <PublishNote savedAt={savedAt} />
 
             <div className="flex gap-2">
               <button
@@ -193,7 +216,7 @@ export function AdminVideos() {
                   <div className="flex shrink-0 items-center gap-1 text-sm">
                     <button
                       onClick={() => move(video, -1)}
-                      disabled={i === 0 || busy}
+                      disabled={i === 0}
                       aria-label="הזזה אחורה"
                       className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
                     >
@@ -201,7 +224,7 @@ export function AdminVideos() {
                     </button>
                     <button
                       onClick={() => move(video, 1)}
-                      disabled={i === videos.length - 1 || busy}
+                      disabled={i === videos.length - 1}
                       aria-label="הזזה קדימה"
                       className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
                     >
