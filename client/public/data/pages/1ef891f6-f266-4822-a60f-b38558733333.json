@@ -7,6 +7,57 @@
   "imageWidth": 1788,
   "imageHeight": 2758,
   "createdAt": "2026-07-29T10:04:20.936Z",
-  "updatedAt": "2026-07-29T10:04:20.936Z",
-  "regions": []
+  "updatedAt": "2026-07-29T10:07:50.230Z",
+  "regions": [
+    {
+      "id": "3137ac68-3756-46ad-a40b-1ae1b332de9d",
+      "shape": "rectangle",
+      "coordinates": {
+        "x": 38.71840383217142,
+        "y": 9.180646055732705,
+        "width": 27.390295539112955,
+        "height": 17.232427561347567
+      },
+      "contentType": "video",
+      "content": "https://vimeo.com/1211656238?fl=ip&fe=ec",
+      "title": "סיכום המשנה"
+    },
+    {
+      "id": "bfaf401d-7fea-4a3b-8bef-ad534e503039",
+      "shape": "polygon",
+      "coordinates": [
+        {
+          "x": 66.26320516658825,
+          "y": 29.635380562872594
+        },
+        {
+          "x": 66.20386211026047,
+          "y": 30.87550256481353
+        },
+        {
+          "x": 61.98729737821308,
+          "y": 31.031817551642867
+        },
+        {
+          "x": 62.020443950215984,
+          "y": 29.72410924719257
+        },
+        {
+          "x": 38.47996236260211,
+          "y": 29.901566615832525
+        },
+        {
+          "x": 38.890552157734916,
+          "y": 26.174961874393453
+        },
+        {
+          "x": 66.12634190154398,
+          "y": 26.174961874393453
+        }
+      ],
+      "contentType": "image",
+      "content": "https://lh3.googleusercontent.com/pw/AP1GczPwcQrimKWxcFi1vOS-a3a-8LqGB86_eNjgiGCIEcRt2cajC2484wDrf7FQvslwdjiIsyX5zv5H6BosT2x3XvGwHTYNHIqOlNL1-N5F4yN3tXdZm5sWIE9pBeEoB7T7xUgiCPRApl40DPaEBvLdogb8=w1408-h768-s-no-gm?authuser=0",
+      "title": "תמונת אווירה"
+    }
+  ]
 }
