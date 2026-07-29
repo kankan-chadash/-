@@ -165,6 +165,32 @@ of casual visitors:
 Anything else — including the old `/admin` — renders the ordinary not-found page, so a guessed
 admin URL looks no different from any other typo.
 
+### The not-found page
+
+A wrong address is answered in the idiom of the sefer rather than the browser's. The page is a
+leaf torn out of the volume — there is no daf 404, so the daf it would have been is shown missing,
+ripped along its foot:
+
+> הגעת לדף
+> **404**
+> נשארו לך עוד 2,298 דפים לסיים את הש״ס
+> [ יאללה ]
+
+The count is real. The Bavli is reckoned at **2,702 dapim** — the gematria of בראשית — so a reader
+standing on daf 404 has exactly 2,298 to go. `NotFound.tsx` keeps the subtraction rather than the
+answer, so the arithmetic stays checkable instead of being a magic number.
+
+The 404 also carries **ת״ד** in the margin, the way every real daf here is named (see
+[Daf numbering](#daf-numbering)). That gloss is what turns the number from an HTTP status into a
+daf, which is what lets the line underneath land as a joke about learning rather than an error
+message. It's `aria-hidden`: the digits have already been announced, and a screen reader would
+otherwise read the letters as a word.
+
+The tear is a `clip-path` polygon on a pseudo-element rather than on the sheet itself, because
+`clip-path` on the sheet would clip away its own `box-shadow`; the shadow lives on the parent as a
+`drop-shadow` filter so it follows the rip instead of tracing a rectangle. The polygon's points
+vary in spacing as well as depth — evenly spaced ones read as a sawtooth, not as torn paper.
+
 **This is obscurity, not access control, and it is not what keeps the site safe.** Anyone who
 reaches the admin page still cannot change anything without a GitHub token that can push to this
 repo, and it is GitHub, not this app, that rejects them. Treat the path as tidiness and the token

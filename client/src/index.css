@@ -1243,3 +1243,127 @@ polygon.hotspot-region.is-located {
     0 0 0 2px var(--color-gold),
     0 2px 8px rgba(0, 0, 0, 0.6);
 }
+
+/* --- The daf that isn't there (404) -------------------------------------- */
+
+/* A leaf torn out of the volume. The drop-shadow lives on the element and the
+   tear on a pseudo-element beneath it, because clip-path on a box would take
+   its own box-shadow away with it — this way the shadow follows the tear. */
+.notfound-sheet {
+  position: relative;
+  isolation: isolate;
+  width: min(30rem, 100%);
+  padding: 3rem 2rem 4.5rem;
+  text-align: center;
+  transform: rotate(-1.1deg);
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.45));
+}
+
+.notfound-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--color-parchment);
+  background-image: radial-gradient(115% 80% at 50% 0%, #fffdfb 40%, var(--color-parchment-dim) 100%);
+  /* The rip along the foot of the leaf. Both the spacing and the depth of the
+     points vary — evenly spaced ones read as a sawtooth, not as torn paper. */
+  clip-path: polygon(
+    0% 0%, 100% 0%, 100% 93%,
+    97.2% 97.6%, 94.1% 91.8%, 91.8% 96.4%, 88.3% 90.6%, 85.9% 95.2%, 82.1% 92.4%,
+    79.4% 97.8%, 75.8% 91.2%, 73.2% 95.6%, 69.6% 89.8%, 67.1% 94.4%, 63.4% 97.2%,
+    60.2% 90.4%, 57.6% 95.8%, 54.1% 92.2%, 51.3% 97.4%, 47.8% 90.8%, 45.2% 96.2%,
+    41.6% 91.6%, 38.9% 95.4%, 35.4% 89.4%, 32.7% 94.8%, 29.1% 97.6%, 26.4% 90.2%,
+    22.8% 96.6%, 20.1% 92.8%, 16.5% 97.2%, 13.8% 90.6%, 10.2% 95.4%, 7.4% 91.4%,
+    3.9% 96.8%, 0% 92.6%
+  );
+}
+
+.notfound-head {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.notfound-lead {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  letter-spacing: 0.14em;
+  color: var(--color-ink-variant);
+}
+
+.notfound-number {
+  position: relative;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+/* Set on a printing plate: ink, with the gold of the binding just behind it. */
+.notfound-digits {
+  font-family: var(--font-serif);
+  font-size: clamp(5rem, 22vw, 8.5rem);
+  font-weight: 700;
+  line-height: 0.95;
+  color: var(--color-ink);
+  text-shadow: 3px 3px 0 rgba(212, 175, 55, 0.42);
+}
+
+/* The number as this site names every other daf: in letters, in the margin. */
+.notfound-gloss {
+  margin-top: 0.9rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  color: rgba(46, 21, 11, 0.42);
+}
+
+.notfound-line {
+  margin: 1rem auto 0;
+  max-width: 22rem;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--color-ink-variant);
+}
+
+.notfound-count {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.notfound-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.6rem;
+  border-radius: 999px;
+  padding: 0.7rem 2rem;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-wood-dark);
+  background: linear-gradient(180deg, var(--color-gold-dim), var(--color-gold));
+  box-shadow: 0 4px 12px rgba(54, 31, 26, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.notfound-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(54, 31, 26, 0.42);
+}
+
+.notfound-cta:active {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notfound-cta {
+    transition: none;
+  }
+  .notfound-cta:hover {
+    transform: none;
+  }
+}
