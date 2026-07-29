@@ -1038,3 +1038,41 @@ polygon.hotspot-region.is-revealed {
     animation: none;
   }
 }
+
+/* --- Badge handle in the editor -------------------------------------------- */
+
+/* The same marker readers will see, but grabbable: dragging it decides where
+   the badge sits on the daf, since the default corner often lands on text. */
+.editor-badge {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  height: 22px;
+  width: 22px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  color: #fff;
+  background-color: rgb(var(--hotspot) / 0.9);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  opacity: 0.65;
+  touch-action: none;
+  transition: opacity 0.15s ease, box-shadow 0.15s ease;
+}
+.editor-badge:hover {
+  opacity: 1;
+}
+.editor-badge:active {
+  cursor: grabbing;
+}
+
+/* The selected region's badge is the one you're most likely to want to move. */
+.editor-badge-selected {
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px var(--color-gold),
+    0 2px 8px rgba(0, 0, 0, 0.6);
+}

@@ -26,3 +26,17 @@ db.pragma('foreign_keys = ON');
 
 const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
 db.exec(schema);
+
+// schema.sql only creates tables that don't exist yet, so a column added to an
+// existing table has to be applied separately. Adding one is idempotent here:
+// we check what's actually there first, so this is safe to run on every boot.
+function addColumnIfMissing(table: string, column: string, definition: string): void {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!columns.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+// Manual badge placement, added after regions shipped.
+addColumnIfMissing('regions', 'badge_x', 'REAL');
+addColumnIfMissing('regions', 'badge_y', 'REAL');

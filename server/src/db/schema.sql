@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS regions (
   content_type TEXT NOT NULL CHECK (content_type IN ('video', 'image', 'text')),
   content TEXT NOT NULL,
   title TEXT,
+  badge_x REAL,
+  badge_y REAL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))

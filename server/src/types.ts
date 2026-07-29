@@ -37,6 +37,9 @@ export interface Region {
   contentType: ContentType;
   content: string;
   title: string | null;
+  /** Manual badge position in percent; null falls back to the shape's default. */
+  badgeX: number | null;
+  badgeY: number | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -66,6 +69,8 @@ export interface RegionRow {
   content_type: ContentType;
   content: string;
   title: string | null;
+  badge_x: number | null;
+  badge_y: number | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

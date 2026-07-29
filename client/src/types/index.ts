@@ -37,6 +37,13 @@ export interface Region {
   contentType: ContentType;
   content: string;
   title: string | null;
+  /**
+   * Where the type badge sits, in percent of the page image. Null means "work
+   * it out from the shape" — the editor only stores a value once someone has
+   * dragged the badge somewhere deliberately.
+   */
+  badgeX?: number | null;
+  badgeY?: number | null;
   sortOrder?: number;
 }
 

@@ -10,7 +10,12 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { ContentType, PolygonCoordinates, Region } from '../../types';
+import type {
+  ContentType,
+  PolygonCoordinates,
+  RectangleCoordinates,
+  Region,
+} from '../../types';
 
 // What each kind of hotspot looks like. Colour alone would fail anyone who
 // can't distinguish these hues, so every type also carries its own glyph —
@@ -67,6 +72,26 @@ export function RegionTypeIcon({ contentType }: { contentType: ContentType }) {
 export function polygonCentre(points: PolygonCoordinates): { x: number; y: number } {
   const total = points.reduce((acc, p) => ({ x: acc.x + p.x, y: acc.y + p.y }), { x: 0, y: 0 });
   return { x: total.x / points.length, y: total.y / points.length };
+}
+
+/**
+ * Where a region's badge sits, in percent of the page image.
+ *
+ * A badge dropped on a fixed corner can land on top of the very words it points
+ * at, and which spot is clear is a judgement call about that particular daf —
+ * so the editor lets it be placed by hand. Once badgeX/badgeY are set they win;
+ * otherwise the shape's natural corner or centre is used.
+ */
+export function badgePosition(region: Region): { x: number; y: number } {
+  if (typeof region.badgeX === 'number' && typeof region.badgeY === 'number') {
+    return { x: region.badgeX, y: region.badgeY };
+  }
+  if (region.shape === 'polygon') {
+    return polygonCentre(region.coordinates as PolygonCoordinates);
+  }
+  const coords = region.coordinates as RectangleCoordinates;
+  // The reading-order corner: the region's right edge, since the page is RTL.
+  return { x: coords.x + coords.width, y: coords.y };
 }
 
 /** Spoken description of a hotspot, so its type is announced, not just its title. */

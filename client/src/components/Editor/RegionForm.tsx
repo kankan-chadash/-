@@ -20,6 +20,8 @@ interface RegionFormProps {
 }
 
 export function RegionForm({ region, onChange, onDelete }: RegionFormProps) {
+  const hasCustomBadge = typeof region.badgeX === 'number' && typeof region.badgeY === 'number';
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -29,6 +31,23 @@ export function RegionForm({ region, onChange, onDelete }: RegionFormProps) {
         <button type="button" onClick={onDelete} className="text-red-600 text-sm hover:underline">
           מחיקת אזור
         </button>
+      </div>
+
+      <div className="rounded border border-outline/60 bg-black/[0.03] p-3">
+        <p className="text-sm text-ink-variant">
+          {hasCustomBadge
+            ? 'מיקום הסמל נקבע ידנית.'
+            : 'הסמל ממוקם אוטומטית בפינת האזור. גררו אותו על התמונה כדי למקם אותו במקום פנוי.'}
+        </p>
+        {hasCustomBadge && (
+          <button
+            type="button"
+            onClick={() => onChange({ ...region, badgeX: null, badgeY: null })}
+            className="mt-2 text-sm text-wood-dark hover:underline"
+          >
+            איפוס למיקום ברירת המחדל
+          </button>
+        )}
       </div>
 
       <label className="block">
