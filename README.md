@@ -130,6 +130,30 @@ so the browser calls it directly with no backend involved. Results are cached pe
 of the page, and anything that can't be resolved (a private video, a host we don't recognise, a
 network failure) falls back to the site mark rather than an empty frame.
 
+### The arrows
+
+Pressing an arrow carries the rail **one plaque onward**, smoothly, and the track's
+`scroll-snap-type: x mandatory` settles it centred — so a press behaves like an ordinary scroll that
+happens to stop in the right place.
+
+Two things make that work that are easy to get wrong:
+
+**Direction.** The rail reads right-to-left, and in RTL `scrollLeft` runs from `0` down to
+`-(scrollWidth - clientWidth)`. Scrolling *onward* there means going **negative**. The step takes
+its sign from the computed `direction`, so it moves the right way under either writing direction.
+
+**Accumulation.** `scrollBy` measures from wherever the rail has got to, which mid-glide is a
+half-finished position — so pressing three times quickly used to collapse into roughly one plaque of
+travel. The arrows keep the position they're steering *towards* and add to that, then `scrollTo` it,
+so a second press adds a plaque the way a second flick of a wheel adds to a scroll already running.
+Any `pointerdown` or `wheel` on the track drops that target: once a hand is on the rail, the hand
+decides where the rail is.
+
+The step is measured off a live plaque (`offsetWidth` plus the track's `column-gap`) rather than
+assumed, since a card is `min(19rem, 78vw)` and so is a different width on a phone than on a desk.
+It's `offsetWidth` and not the bounding rect because the plaques are scaled while they settle in and
+again on hover, and a transformed rect would make the step wander.
+
 ## Turning a daf
 
 A Gemara leaf carries amud א on its front and amud ב on its back, and `DafTurner` models exactly
