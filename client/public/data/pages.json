@@ -20,5 +20,16 @@
     "imageHeight": 2758,
     "createdAt": "2026-07-29T10:04:20.936Z",
     "updatedAt": "2026-07-29T10:04:20.936Z"
+  },
+  {
+    "id": "29938016-5ba0-48ab-8f9f-02353c36b1b0",
+    "tractate": "הכונס",
+    "daf": 56,
+    "side": "a",
+    "pageImageUrl": "data/images/37cfcc6c-272c-473f-9c70-e3433b479c3e.png",
+    "imageWidth": 1788,
+    "imageHeight": 2758,
+    "createdAt": "2026-07-29T10:08:20.275Z",
+    "updatedAt": "2026-07-29T10:08:20.275Z"
   }
 ]
