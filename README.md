@@ -220,8 +220,27 @@ hotspot in full, tinted and dashed by type — off by default so the daf isn't c
 remembered in `localStorage` once chosen, since a reader who wants the map shouldn't have to
 re-enable it on every daf. A legend above the page says what the colours mean.
 
-Polygon badges are rendered outside the SVG and positioned over the page: inside it they'd be
-stretched by `preserveAspectRatio="none"` along with the shapes they sit on.
+### Badges dodge the text
+
+A badge that lands on a letter hides the very words it points at, so placement isn't fixed — it's
+derived from the scan itself. `utils/inkMap.ts` draws the page onto a canvas once, reduces it to a
+coarse "is there ink in this cell" grid, and `useBadgePlacements` then slides each badge **along x
+only** to the nearest cell run that carries no ink. A daf always has channels — the outer margins
+and the gutters between the commentary columns — so a clear spot is never far.
+
+Only x moves, so a badge stays on the line it belongs to. Candidates are tried outward from the
+anchor in both directions, so the badge travels as little as possible; if a row really is inked all
+the way across, it settles for the emptiest spot rather than pretending it found a clear one.
+
+The ink threshold is derived from each page's own paper tone rather than being a fixed constant,
+since scans run from bright white to deep sepia.
+
+If the pixels can't be read at all — a cross-origin image taints the canvas — every badge simply
+uses its unadjusted anchor. This only ever improves placement; it can't break it.
+
+All badges (rectangle and polygon alike) are positioned over the page rather than inside their
+shapes: a polygon can't host a child, and inside the SVG a badge would be stretched by
+`preserveAspectRatio="none"` along with the shapes.
 
 ## Public viewer
 

@@ -515,11 +515,11 @@ polygon.hotspot-region.is-revealed {
 }
 
 /* The always-visible marker: what tells you a hotspot is here and what kind it
-   is, without clicking or even hovering. Small enough not to bury the daf. */
+   is, without clicking or even hovering. Positioned over the page rather than
+   inside its region, because useBadgePlacements nudges it along x to the
+   nearest patch of blank page so it never covers the text it points at. */
 .hotspot-badge {
   position: absolute;
-  top: 2px;
-  inset-inline-start: 2px;
   z-index: 5;
   display: flex;
   height: 17px;
@@ -529,33 +529,20 @@ polygon.hotspot-region.is-revealed {
   padding: 3px;
   border-radius: 3px;
   color: #fff;
-  background-color: rgb(var(--hotspot) / 0.82);
+  background-color: rgb(var(--hotspot) / 0.85);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
-  opacity: 0.75;
-  transition: opacity 0.16s ease, transform 0.16s ease;
-  pointer-events: none;
-}
-.hotspot-region:hover .hotspot-badge,
-.hotspot-region.is-active .hotspot-badge,
-.hotspot-region.is-revealed .hotspot-badge {
-  opacity: 1;
-  transform: scale(1.1);
+  /* Centred on the coordinates the placement returns. */
+  transform: translate(-50%, -50%);
+  opacity: 0.78;
+  cursor: pointer;
+  transition: opacity 0.16s ease, transform 0.16s ease, left 0.3s ease;
 }
 
-/* Polygons can't host a child, so their badge is positioned over the page and
-   centred on the shape. It's clickable, since it may cover the shape's middle.
-   The base class pins itself with inset-inline-start; that has to be cleared or
-   it fights the inline left/top and the badge snaps to the page edge. */
-.hotspot-badge-floating {
-  inset-inline-start: auto;
-  inset-inline-end: auto;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  pointer-events: auto;
-}
-.hotspot-badge-floating:hover,
-.hotspot-badge-floating.is-revealed {
+.hotspot-badge:hover,
+.hotspot-badge.is-active,
+.hotspot-badge.is-revealed {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1.12);
 }
 
 /* --- Region legend / reveal toggle ---------------------------------------- */
