@@ -21,6 +21,7 @@ import { DafTurner, TURN_DURATION_MS } from '../components/Viewer/DafTurner';
 import type { TurnDirection } from '../components/Viewer/DafTurner';
 import { DafTitle } from '../components/Viewer/DafTitle';
 import { Chevron } from '../components/Layout/Chevron';
+import { RegionLegend } from '../components/Viewer/RegionLegend';
 import { findSiblings, formatDaf, formatPageTitle } from '../utils/library';
 
 export function ViewerPage() {
@@ -32,6 +33,7 @@ export function ViewerPage() {
   const [outgoing, setOutgoing] = useState<{ page: PageWithRegions; direction: TurnDirection } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeRegion, setActiveRegion] = useState<Region | null>(null);
+  const [showAllRegions, setShowAllRegions] = useState(readShowAllPreference);
 
   // Which way the next daf change should turn. Set by whatever triggered the
   // navigation (button, key, swipe) just before the URL changes.
@@ -152,6 +154,17 @@ export function ViewerPage() {
           </h1>
         )}
 
+        {page && (
+          <RegionLegend
+            showAll={showAllRegions}
+            onToggleShowAll={(next) => {
+              setShowAllRegions(next);
+              writeShowAllPreference(next);
+            }}
+            regionCount={page.regions.length}
+          />
+        )}
+
         {page ? (
           <DafTurner
             turnKey={page.id}
@@ -178,6 +191,7 @@ export function ViewerPage() {
               regions={page.regions}
               onSelectRegion={setActiveRegion}
               activeRegionId={activeRegion?.id}
+              showAll={showAllRegions}
             />
           </DafTurner>
         ) : (
@@ -252,6 +266,27 @@ function TurnButton({
       {alignEnd && <Chevron toward={toward} className="h-5 w-5 shrink-0" />}
     </button>
   );
+}
+
+// Revealing every hotspot is a deliberate choice, so it's off by default and
+// remembered once made — a reader who wants the map shouldn't re-enable it on
+// every daf.
+const SHOW_ALL_KEY = 'gemara_show_all_regions';
+
+function readShowAllPreference(): boolean {
+  try {
+    return localStorage.getItem(SHOW_ALL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function writeShowAllPreference(next: boolean): void {
+  try {
+    localStorage.setItem(SHOW_ALL_KEY, next ? '1' : '0');
+  } catch {
+    // No storage available: the choice simply doesn't persist.
+  }
 }
 
 /** Horizontal swipe detection that ignores vertical scrolling and stray taps. */
