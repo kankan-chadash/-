@@ -14,6 +14,8 @@ import { HashRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { GithubAdminAuthProvider } from './context/GithubAdminAuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { GuideProvider } from './components/Onboarding/GuideContext';
+import { WelcomeGuide } from './components/Onboarding/WelcomeGuide';
 import { ViewerHome } from './pages/ViewerHome';
 import { ViewerPage } from './pages/ViewerPage';
 import { VideosPage } from './pages/VideosPage';
@@ -28,44 +30,47 @@ export default function App() {
     <HashRouter>
       <AuthProvider>
         <GithubAdminAuthProvider>
-          <Routes>
-            <Route path="/" element={<ViewerHome />} />
-            <Route path="/view/:pageId" element={<ViewerPage />} />
-            <Route path="/videos" element={<VideosPage />} />
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/pages/:pageId"
-              element={
-                <ProtectedRoute>
-                  <AdminPageEditor />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/videos"
-              element={
-                <ProtectedRoute>
-                  <AdminVideos />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/upcoming"
-              element={
-                <ProtectedRoute>
-                  <AdminUpcoming />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+          <GuideProvider>
+            <WelcomeGuide />
+            <Routes>
+              <Route path="/" element={<ViewerHome />} />
+              <Route path="/view/:pageId" element={<ViewerPage />} />
+              <Route path="/videos" element={<VideosPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/pages/:pageId"
+                element={
+                  <ProtectedRoute>
+                    <AdminPageEditor />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/videos"
+                element={
+                  <ProtectedRoute>
+                    <AdminVideos />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/upcoming"
+                element={
+                  <ProtectedRoute>
+                    <AdminUpcoming />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </GuideProvider>
         </GithubAdminAuthProvider>
       </AuthProvider>
     </HashRouter>

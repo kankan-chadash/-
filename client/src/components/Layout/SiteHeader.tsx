@@ -13,6 +13,7 @@
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logoUrl from '../../assets/logo.png';
+import { useGuide } from '../Onboarding/GuideContext';
 
 interface SiteHeaderProps {
   /** Rendered at the end of the bar — page-specific controls (מיקום הדף וכו'). */
@@ -26,6 +27,7 @@ const NAV = [
 
 export function SiteHeader({ trailing }: SiteHeaderProps) {
   const { pathname } = useLocation();
+  const { open: openGuide } = useGuide();
 
   return (
     <header className="sticky top-0 z-40 relative bg-wood-dark/95 shadow-lg shadow-black/40 backdrop-blur">
@@ -69,7 +71,18 @@ export function SiteHeader({ trailing }: SiteHeaderProps) {
           })}
         </nav>
 
-        <div className="ms-auto">{trailing}</div>
+        <div className="ms-auto flex items-center gap-2">
+          {trailing}
+          <button
+            type="button"
+            onClick={openGuide}
+            aria-label="פתיחת המדריך"
+            title="איך זה עובד?"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-gold/40 text-sm text-gold/80 transition hover:bg-gold/15 hover:text-gold"
+          >
+            ?
+          </button>
+        </div>
       </div>
     </header>
   );

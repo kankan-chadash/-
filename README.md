@@ -143,6 +143,23 @@ midpoint so it arcs rather than wiping flat; a sheen sweeps each face as it pass
 vertical; and the raised leaf throws a shadow across the page beneath it that retracts as it lands.
 Neighbouring daf images are preloaded so a turn never reveals a blank.
 
+## Welcome guide
+
+First-time visitors get a five-step tour explaining what the site is and how to use it: choosing a
+volume, clicking regions on a daf, paging between dapim, and the videos rail. Each step is
+illustrated with a working miniature built from the same surfaces the real screens use — a little
+shelf with a volume being lifted, a daf with a pulsing region and a tapping cursor, a leaf actually
+turning — rather than generic icons.
+
+It can be skipped at any point from the button on the illustration, by pressing Escape, or by
+clicking outside the card; any of those marks it seen (`gemara_guide_seen_v1` in `localStorage`) so
+it never reappears uninvited. The `?` in the header reopens it on demand, always from step one.
+Arrow keys move between steps (left advances, matching the RTL daf navigation), Tab is trapped
+inside the dialog, and the page behind is locked from scrolling while it's up. It never mounts on
+`/admin` — an editor signing in doesn't need a walkthrough of the public site.
+
+Bump the key's version suffix in `GuideContext.tsx` to show a revised tour to existing readers.
+
 ## The bookcase
 
 `/` groups the published dapim by tractate and stands them as bound volumes in a recessed case —
