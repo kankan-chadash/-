@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import type { Video } from '../../types';
 import { useAdminApi } from '../../api/adminData';
 import { useThumbnail } from '../../hooks/useThumbnail';
+import { routes } from '../../routes';
 
 export function AdminVideos() {
   const api = useAdminApi();
@@ -104,7 +105,7 @@ export function AdminVideos() {
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <h1 className="font-serif text-2xl text-parchment">ניהול — סרטונים חינוכיים</h1>
-          <Link to="/admin" className="text-sm text-gold hover:underline">
+          <Link to={routes.admin} className="text-sm text-gold hover:underline">
             → חזרה לדפים
           </Link>
         </div>

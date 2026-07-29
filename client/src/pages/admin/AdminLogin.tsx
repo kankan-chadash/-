@@ -16,6 +16,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useGithubAdminAuth } from '../../context/GithubAdminAuthContext';
 import { isGithubAdminMode } from '../../api/adminData';
+import { routes } from '../../routes';
 
 export function AdminLogin() {
   return isGithubAdminMode ? <GithubTokenLogin /> : <UsernamePasswordLogin />;
@@ -42,7 +43,7 @@ function UsernamePasswordLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (username) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to={routes.admin} replace />;
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -51,7 +52,7 @@ function UsernamePasswordLogin() {
     setIsSubmitting(true);
     try {
       await login(user, password);
-      const from = location.state?.from?.pathname ?? '/admin';
+      const from = location.state?.from?.pathname ?? routes.admin;
       navigate(from, { replace: true });
     } catch {
       setError('שם משתמש או סיסמה שגויים');
@@ -109,7 +110,7 @@ function GithubTokenLogin() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (token) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to={routes.admin} replace />;
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -118,7 +119,7 @@ function GithubTokenLogin() {
     setIsSubmitting(true);
     try {
       await signIn(value.trim());
-      const from = location.state?.from?.pathname ?? '/admin';
+      const from = location.state?.from?.pathname ?? routes.admin;
       navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'לא ניתן לאמת את הטוקן');

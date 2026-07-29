@@ -19,11 +19,13 @@ import { WelcomeGuide } from './components/Onboarding/WelcomeGuide';
 import { ViewerHome } from './pages/ViewerHome';
 import { ViewerPage } from './pages/ViewerPage';
 import { VideosPage } from './pages/VideosPage';
+import { NotFound } from './pages/NotFound';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminPageEditor } from './pages/admin/AdminPageEditor';
 import { AdminVideos } from './pages/admin/AdminVideos';
 import { AdminUpcoming } from './pages/admin/AdminUpcoming';
+import { routes } from './routes';
 
 export default function App() {
   return (
@@ -33,12 +35,12 @@ export default function App() {
           <GuideProvider>
             <WelcomeGuide />
             <Routes>
-              <Route path="/" element={<ViewerHome />} />
-              <Route path="/view/:pageId" element={<ViewerPage />} />
-              <Route path="/videos" element={<VideosPage />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path={routes.library} element={<ViewerHome />} />
+              <Route path={routes.dafPattern} element={<ViewerPage />} />
+              <Route path={routes.videos} element={<VideosPage />} />
+              <Route path={routes.adminLogin} element={<AdminLogin />} />
               <Route
-                path="/admin"
+                path={routes.admin}
                 element={
                   <ProtectedRoute>
                     <AdminDashboard />
@@ -46,7 +48,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/admin/pages/:pageId"
+                path={routes.adminPagePattern}
                 element={
                   <ProtectedRoute>
                     <AdminPageEditor />
@@ -54,7 +56,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/admin/videos"
+                path={routes.adminVideos}
                 element={
                   <ProtectedRoute>
                     <AdminVideos />
@@ -62,13 +64,17 @@ export default function App() {
                 }
               />
               <Route
-                path="/admin/upcoming"
+                path={routes.adminUpcoming}
                 element={
                   <ProtectedRoute>
                     <AdminUpcoming />
                   </ProtectedRoute>
                 }
               />
+              {/* Anything else — including the old /admin — gets the ordinary
+                  not-found page rather than a blank screen, which also means a
+                  guessed admin URL reveals nothing. */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </GuideProvider>
         </GithubAdminAuthProvider>

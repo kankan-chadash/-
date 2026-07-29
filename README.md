@@ -62,8 +62,8 @@ npm install
 npm run dev      # starts on http://localhost:5173, proxies /api and /uploads to :4000
 ```
 
-Visit `http://localhost:5173` for the public viewer, or `http://localhost:5173/admin` to sign in
-and manage pages (unauthenticated visitors are redirected to `/admin/login`).
+Visit `http://localhost:5173` for the public viewer, or `http://localhost:5173/#/הנהלה` to sign in
+and manage pages (unauthenticated visitors are redirected to the login screen).
 
 ### Production build
 
@@ -142,6 +142,33 @@ Depth comes from three things working together: the leaf lifts off the spine (`t
 midpoint so it arcs rather than wiping flat; a sheen sweeps each face as it passes through the
 vertical; and the raised leaf throws a shadow across the page beneath it that retracts as it lands.
 Neighbouring daf images are preloaded so a turn never reveals a blank.
+
+## Routes
+
+All paths live in `client/src/routes.ts`, so moving a screen means editing one line rather than
+hunting for stragglers across links, redirects, and guards.
+
+The admin area sits under **`/הנהלה`** rather than the guessable `/admin`, to keep it out of the way
+of casual visitors:
+
+| | |
+|---|---|
+| `/` | the library |
+| `/view/:pageId` | a daf |
+| `/videos` | the videos rail |
+| `/הנהלה` | admin dashboard |
+| `/הנהלה/כניסה` | admin sign-in |
+| `/הנהלה/דפים/:pageId` | region editor |
+| `/הנהלה/סרטונים` | manage videos |
+| `/הנהלה/בקרוב` | manage announced volumes |
+
+Anything else — including the old `/admin` — renders the ordinary not-found page, so a guessed
+admin URL looks no different from any other typo.
+
+**This is obscurity, not access control, and it is not what keeps the site safe.** Anyone who
+reaches the admin page still cannot change anything without a GitHub token that can push to this
+repo, and it is GitHub, not this app, that rejects them. Treat the path as tidiness and the token
+as the lock. Renaming it does not remove the need to scope that token to this one repository.
 
 ## Welcome guide
 
