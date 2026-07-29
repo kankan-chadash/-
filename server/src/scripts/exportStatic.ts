@@ -14,8 +14,8 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../db';
 import { config } from '../config';
-import { mapPageRow, mapRegionRow, mapVideoRow } from '../db/mappers';
-import { PageRow, RegionRow, VideoRow } from '../types';
+import { mapPageRow, mapRegionRow, mapUpcomingBookRow, mapVideoRow } from '../db/mappers';
+import { PageRow, RegionRow, UpcomingBookRow, VideoRow } from '../types';
 
 // Exports the current database content into static JSON (+ copies referenced
 // uploaded images) under client/public/data, so `npm run build:pages` can ship
@@ -95,12 +95,21 @@ function main() {
     JSON.stringify(videoRows.map(mapVideoRow), null, 2)
   );
 
+  // Volumes announced on the shelf but not yet published.
+  const upcomingRows = db
+    .prepare('SELECT * FROM upcoming_books ORDER BY sort_order ASC, created_at ASC')
+    .all() as UpcomingBookRow[];
+  fs.writeFileSync(
+    path.join(CLIENT_PUBLIC_DATA_DIR, 'upcoming.json'),
+    JSON.stringify(upcomingRows.map(mapUpcomingBookRow), null, 2)
+  );
+
   // Keep the folders tracked in git even when there's no content yet.
   fs.writeFileSync(path.join(IMAGES_DIR, '.gitkeep'), '');
   fs.writeFileSync(path.join(PAGES_DIR, '.gitkeep'), '');
 
   console.log(
-    `Exported ${pageRows.length} page(s), ${videoRows.length} video(s), and copied ${copiedFiles.size} image(s) to`
+    `Exported ${pageRows.length} page(s), ${videoRows.length} video(s), ${upcomingRows.length} upcoming volume(s), and copied ${copiedFiles.size} image(s) to`
   );
   console.log(`  ${CLIENT_PUBLIC_DATA_DIR}`);
   console.log('Commit the client/public/data/** changes, then push/merge to trigger the GitHub Pages deploy.');

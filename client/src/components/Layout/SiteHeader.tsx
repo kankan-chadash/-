@@ -28,7 +28,13 @@ export function SiteHeader({ trailing }: SiteHeaderProps) {
   const { pathname } = useLocation();
 
   return (
-    <header className="sticky top-0 z-40 border-b-2 border-gold/40 bg-wood-dark/95 backdrop-blur">
+    <header className="sticky top-0 z-40 relative bg-wood-dark/95 shadow-lg shadow-black/40 backdrop-blur">
+      {/* A drawn rule rather than a flat border: it fades at the edges like an
+          inlay, which reads far better against the wood than a hard line. */}
+      <span
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-l from-transparent via-gold/70 to-transparent"
+      />
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Link
           to="/"

@@ -21,3 +21,6 @@ const isStatic = import.meta.env.VITE_DATA_MODE === 'static';
 export const fetchPages = isStatic ? staticApi.fetchPages : liveApi.fetchPages;
 export const fetchPage = isStatic ? staticApi.fetchPage : liveApi.fetchPage;
 export const fetchVideos = isStatic ? staticApi.fetchVideos : liveApi.fetchVideos;
+export const fetchUpcomingBooks = isStatic
+  ? staticApi.fetchUpcomingBooks
+  : liveApi.fetchUpcomingBooks;

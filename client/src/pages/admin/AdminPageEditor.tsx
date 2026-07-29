@@ -19,6 +19,7 @@ import type { EditorMode } from '../../components/Editor/DrawingCanvas';
 import type { EditableRegion } from '../../components/Editor/types';
 import { RegionForm } from '../../components/Editor/RegionForm';
 import { RegionList } from '../../components/Editor/RegionList';
+import { formatDaf } from '../../utils/library';
 
 const MODE_LABELS: Record<EditorMode, string> = {
   select: 'בחירה',
@@ -98,7 +99,7 @@ export function AdminPageEditor() {
           </Link>
           {page && (
             <h1 className="font-serif text-xl text-parchment">
-              <bdi>{page.tractate}</bdi> {page.daf}{page.side} — עורך אזורים
+              <bdi>{page.tractate}</bdi> {formatDaf(page)} — עורך אזורים
             </h1>
           )}
           <button

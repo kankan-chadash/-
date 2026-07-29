@@ -10,7 +10,7 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions, Video } from '../types';
+import type { Page, PageWithRegions, UpcomingBook, Video } from '../types';
 
 // Reads data pre-exported by `server/src/scripts/exportStatic.ts` (see README).
 // Used instead of api/client.ts when built with `npm run build:pages`, since a
@@ -61,4 +61,12 @@ export async function fetchVideos(): Promise<Video[]> {
   if (res.status === 404) return [];
   if (!res.ok) throw new Error('טעינת הסרטונים נכשלה');
   return (await res.json()) as Video[];
+}
+
+/** Volumes announced but not yet published. A missing file just means none. */
+export async function fetchUpcomingBooks(): Promise<UpcomingBook[]> {
+  const res = await fetch(`${BASE}data/upcoming.json`);
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error('טעינת הכרכים הקרובים נכשלה');
+  return (await res.json()) as UpcomingBook[];
 }

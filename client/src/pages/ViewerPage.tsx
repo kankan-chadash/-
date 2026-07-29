@@ -181,9 +181,7 @@ export function ViewerPage() {
             />
           </DafTurner>
         ) : (
-          <div className="surface-parchment rounded border-t-4 border-gold p-16 text-center text-ink-variant">
-            פותח את הכרך…
-          </div>
+          <div className="daf-sheet p-16 text-center text-ink-variant">פותח את הכרך…</div>
         )}
       </main>
 

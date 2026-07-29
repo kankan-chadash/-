@@ -11,6 +11,7 @@
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
 import type { Page } from '../types';
+import { amudLabel, toGematria } from './gematria';
 
 // Turns the flat published page list into the shelf-of-volumes model the viewer
 // presents: one "book" per tractate, its dapim in reading order.
@@ -64,8 +65,9 @@ export function findSiblings(pages: Page[], current: Page): Siblings {
   };
 }
 
+/** How the daf is said: נ״ד ע״א. The stored number is only ever for sorting. */
 export function formatDaf(page: Pick<Page, 'daf' | 'side'>): string {
-  return `${page.daf}${page.side}`;
+  return `${toGematria(page.daf)} ${amudLabel(page.side)}`;
 }
 
 /** Plain-string title, for alt text and aria-labels. Use <DafTitle> for anything on screen. */
