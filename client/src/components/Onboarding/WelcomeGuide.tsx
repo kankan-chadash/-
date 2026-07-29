@@ -21,6 +21,7 @@ import {
   SceneVideos,
   SceneWelcome,
 } from './GuideScenes';
+import { isAdminPath } from '../../routes';
 
 interface Step {
   title: string;
@@ -101,7 +102,7 @@ export function WelcomeGuide() {
 
   // The tour is for readers. An admin signing in to edit shouldn't be handed a
   // walkthrough of the public site, so it never mounts behind /admin.
-  if (!isOpen || pathname.startsWith('/admin')) return null;
+  if (!isOpen || isAdminPath(pathname)) return null;
 
   const current = STEPS[step];
 

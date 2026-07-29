@@ -15,6 +15,7 @@ import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import type { UpcomingBook } from '../../types';
 import { useAdminApi } from '../../api/adminData';
+import { routes } from '../../routes';
 
 export function AdminUpcoming() {
   const api = useAdminApi();
@@ -99,7 +100,7 @@ export function AdminUpcoming() {
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-5">
           <h1 className="font-serif text-2xl text-parchment">ניהול — כרכים בקרוב</h1>
-          <Link to="/admin" className="text-sm text-gold hover:underline">
+          <Link to={routes.admin} className="text-sm text-gold hover:underline">
             → חזרה לדפים
           </Link>
         </div>

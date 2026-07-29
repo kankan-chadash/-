@@ -18,6 +18,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useGithubAdminAuth } from '../../context/GithubAdminAuthContext';
 import { isGithubAdminMode, useAdminApi } from '../../api/adminData';
 import { formatDaf } from '../../utils/library';
+import { routes } from '../../routes';
 
 export function AdminDashboard() {
   const expressAuth = useAuth();
@@ -64,7 +65,7 @@ export function AdminDashboard() {
       // In GitHub-commit mode the uploaded image isn't fetchable from its real
       // URL until the next Pages deploy finishes (~1-2 min). Pass a local blob
       // URL so the editor can preview it immediately in this session.
-      navigate(`/admin/pages/${page.id}`, { state: { previewImageUrl: URL.createObjectURL(file) } });
+      navigate(routes.adminPage(page.id), { state: { previewImageUrl: URL.createObjectURL(file) } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'יצירת הדף נכשלה');
     } finally {
@@ -84,10 +85,10 @@ export function AdminDashboard() {
         <div className="mx-auto max-w-5xl px-6 py-5 flex items-center justify-between">
           <h1 className="font-serif text-2xl text-parchment">ניהול — דפים</h1>
           <div className="flex items-center gap-4 text-parchment/80 text-sm">
-            <Link to="/admin/videos" className="text-gold hover:underline">
+            <Link to={routes.adminVideos} className="text-gold hover:underline">
               סרטונים חינוכיים
             </Link>
-            <Link to="/admin/upcoming" className="text-gold hover:underline">
+            <Link to={routes.adminUpcoming} className="text-gold hover:underline">
               כרכים בקרוב
             </Link>
             <span>{username}</span>
@@ -174,7 +175,7 @@ export function AdminDashboard() {
                   </Link>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <Link to={`/admin/pages/${page.id}`} className="text-wood-dark font-semibold hover:underline">
+                  <Link to={routes.adminPage(page.id)} className="text-wood-dark font-semibold hover:underline">
                     עריכה
                   </Link>
                   <button onClick={() => handleDelete(page.id)} className="text-red-600 hover:underline">

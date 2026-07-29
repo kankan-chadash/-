@@ -20,6 +20,7 @@ import type { EditableRegion } from '../../components/Editor/types';
 import { RegionForm } from '../../components/Editor/RegionForm';
 import { RegionList } from '../../components/Editor/RegionList';
 import { formatDaf } from '../../utils/library';
+import { routes } from '../../routes';
 
 const MODE_LABELS: Record<EditorMode, string> = {
   select: 'בחירה',
@@ -94,7 +95,7 @@ export function AdminPageEditor() {
     <div className="min-h-screen bg-wood">
       <header className="border-b-2 border-gold/40 bg-wood-dark">
         <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
-          <Link to="/admin" className="text-parchment/80 hover:text-gold text-sm">
+          <Link to={routes.admin} className="text-parchment/80 hover:text-gold text-sm">
             → כל הדפים
           </Link>
           {page && (

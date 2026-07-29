@@ -15,6 +15,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useGithubAdminAuth } from '../context/GithubAdminAuthContext';
 import { isGithubAdminMode } from '../api/adminData';
+import { routes } from '../routes';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const expressAuth = useAuth();
@@ -29,7 +30,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to={routes.adminLogin} state={{ from: location }} replace />;
   }
 
   return <>{children}</>;
