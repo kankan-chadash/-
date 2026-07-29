@@ -28,6 +28,8 @@ interface HotspotOverlayProps {
   activeRegionId?: string | null;
   /** Outline every hotspot in full, rather than only marking it with a badge. */
   showAll?: boolean;
+  /** Briefly flags one region, for walking a reader back to it from a list. */
+  locatedRegionId?: string | null;
 }
 
 /**
@@ -47,6 +49,7 @@ export function HotspotOverlay({
   onSelectRegion,
   activeRegionId,
   showAll = false,
+  locatedRegionId,
 }: HotspotOverlayProps) {
   const rectangles = regions.filter((r) => r.shape === 'rectangle');
   const polygons = regions.filter((r) => r.shape === 'polygon');
@@ -56,6 +59,7 @@ export function HotspotOverlay({
       'hotspot-region',
       regionTypeClass(region.contentType),
       region.id === activeRegionId ? 'is-active' : '',
+      region.id === locatedRegionId ? 'is-located' : '',
       showAll ? 'is-revealed' : '',
     ]
       .filter(Boolean)
@@ -77,6 +81,7 @@ export function HotspotOverlay({
         return (
           <div
             key={region.id}
+            data-region-id={region.id}
             role="button"
             tabIndex={0}
             aria-label={regionAriaLabel(region)}
@@ -106,6 +111,7 @@ export function HotspotOverlay({
             return (
               <polygon
                 key={region.id}
+                data-region-id={region.id}
                 points={points}
                 className={stateClass(region)}
                 vectorEffect="non-scaling-stroke"
@@ -136,9 +142,12 @@ export function HotspotOverlay({
             key={`${region.id}-badge`}
             aria-hidden
             title={REGION_TYPE_LABELS[region.contentType]}
+            data-badge-region-id={region.id}
             className={`hotspot-badge ${regionTypeClass(region.contentType)} ${
               region.id === activeRegionId ? 'is-active' : ''
-            } ${showAll ? 'is-revealed' : ''}`}
+            } ${region.id === locatedRegionId ? 'is-located' : ''} ${
+              showAll ? 'is-revealed' : ''
+            }`}
             style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
             onClick={() => onSelectRegion(region)}
           >
