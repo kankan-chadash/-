@@ -102,3 +102,21 @@ export interface VideoRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface UpcomingBook {
+  id: string;
+  tractate: string;
+  note: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpcomingBookRow {
+  id: string;
+  tractate: string;
+  note: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}

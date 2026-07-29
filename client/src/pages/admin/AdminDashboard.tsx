@@ -17,6 +17,7 @@ import type { Page } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useGithubAdminAuth } from '../../context/GithubAdminAuthContext';
 import { isGithubAdminMode, useAdminApi } from '../../api/adminData';
+import { formatDaf } from '../../utils/library';
 
 export function AdminDashboard() {
   const expressAuth = useAuth();
@@ -85,6 +86,9 @@ export function AdminDashboard() {
           <div className="flex items-center gap-4 text-parchment/80 text-sm">
             <Link to="/admin/videos" className="text-gold hover:underline">
               סרטונים חינוכיים
+            </Link>
+            <Link to="/admin/upcoming" className="text-gold hover:underline">
+              כרכים בקרוב
             </Link>
             <span>{username}</span>
             <button onClick={() => signOut()} className="text-gold hover:underline">
@@ -163,7 +167,7 @@ export function AdminDashboard() {
               <li key={page.id} className="py-3 flex items-center justify-between gap-4">
                 <div>
                   <p className="font-medium text-ink">
-                    <bdi>{page.tractate}</bdi> {page.daf}{page.side}
+                    <bdi>{page.tractate}</bdi> {formatDaf(page)}
                   </p>
                   <Link to={`/view/${page.id}`} className="text-xs text-ink-variant hover:underline">
                     צפייה בדף הציבורי

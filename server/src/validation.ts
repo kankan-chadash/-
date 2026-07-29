@@ -70,3 +70,11 @@ export const videoInputSchema = z.object({
 });
 
 export const videoUpdateSchema = videoInputSchema.partial();
+
+export const upcomingBookInputSchema = z.object({
+  tractate: z.string().min(1).max(100),
+  note: z.string().max(200).nullable().optional(),
+  sortOrder: z.number().int().optional(),
+});
+
+export const upcomingBookUpdateSchema = upcomingBookInputSchema.partial();

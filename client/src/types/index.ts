@@ -73,3 +73,19 @@ export interface VideoInput {
   url: string;
   sortOrder?: number;
 }
+
+/** A volume announced on the shelf before any of its dapim are published. */
+export interface UpcomingBook {
+  id: string;
+  tractate: string;
+  note: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpcomingBookInput {
+  tractate: string;
+  note?: string | null;
+  sortOrder?: number;
+}

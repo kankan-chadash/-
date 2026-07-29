@@ -10,7 +10,15 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
+import type {
+  Page,
+  PageWithRegions,
+  Region,
+  UpcomingBook,
+  UpcomingBookInput,
+  Video,
+  VideoInput,
+} from '../types';
 import type { CreatePageInput } from './client';
 import { deleteFile, getFile, putRawFile, putTextFile, readFileAsBase64 } from './githubApi';
 
@@ -23,6 +31,7 @@ const PAGES_INDEX_PATH = 'client/public/data/pages.json';
 const pagePath = (id: string) => `client/public/data/pages/${id}.json`;
 const imagePath = (filename: string) => `client/public/data/images/${filename}`;
 const VIDEOS_PATH = 'client/public/data/videos.json';
+const UPCOMING_PATH = 'client/public/data/upcoming.json';
 
 function sortIndex(pages: Page[]): Page[] {
   return [...pages].sort(
@@ -217,4 +226,69 @@ export async function deleteVideo(token: string, id: string): Promise<void> {
   const { videos, sha } = await readVideos(token);
   if (!videos.some((v) => v.id === id)) return;
   await writeVideos(token, videos.filter((v) => v.id !== id), sha, `Delete video ${id}`);
+}
+
+// --- Upcoming volumes (the greyed-out spines on the shelf) ---
+
+async function readUpcoming(token: string): Promise<{ books: UpcomingBook[]; sha?: string }> {
+  const file = await getFile(token, UPCOMING_PATH);
+  return { books: file ? (JSON.parse(file.content) as UpcomingBook[]) : [], sha: file?.sha };
+}
+
+function sortUpcoming(books: UpcomingBook[]): UpcomingBook[] {
+  return [...books].sort((a, b) => a.sortOrder - b.sortOrder || a.createdAt.localeCompare(b.createdAt));
+}
+
+async function writeUpcoming(token: string, books: UpcomingBook[], sha: string | undefined, message: string) {
+  await putTextFile(token, UPCOMING_PATH, JSON.stringify(sortUpcoming(books), null, 2), message, sha);
+}
+
+export async function fetchAdminUpcomingBooks(token: string): Promise<UpcomingBook[]> {
+  const { books } = await readUpcoming(token);
+  return sortUpcoming(books);
+}
+
+export async function createUpcomingBook(token: string, input: UpcomingBookInput): Promise<UpcomingBook> {
+  const { books, sha } = await readUpcoming(token);
+  const now = new Date().toISOString();
+  const book: UpcomingBook = {
+    id: crypto.randomUUID(),
+    tractate: input.tractate,
+    note: input.note ?? null,
+    sortOrder: input.sortOrder ?? books.reduce((max, b) => Math.max(max, b.sortOrder), -1) + 1,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await writeUpcoming(token, [...books, book], sha, `Announce upcoming volume: ${input.tractate}`);
+  return book;
+}
+
+export async function updateUpcomingBook(
+  token: string,
+  id: string,
+  input: Partial<UpcomingBookInput>
+): Promise<UpcomingBook> {
+  const { books, sha } = await readUpcoming(token);
+  const existing = books.find((b) => b.id === id);
+  if (!existing) throw new Error('הכרך לא נמצא');
+  const updated: UpcomingBook = {
+    ...existing,
+    tractate: input.tractate ?? existing.tractate,
+    note: input.note !== undefined ? input.note : existing.note,
+    sortOrder: input.sortOrder ?? existing.sortOrder,
+    updatedAt: new Date().toISOString(),
+  };
+  await writeUpcoming(
+    token,
+    books.map((b) => (b.id === id ? updated : b)),
+    sha,
+    `Update upcoming volume: ${updated.tractate}`
+  );
+  return updated;
+}
+
+export async function deleteUpcomingBook(token: string, id: string): Promise<void> {
+  const { books, sha } = await readUpcoming(token);
+  if (!books.some((b) => b.id === id)) return;
+  await writeUpcoming(token, books.filter((b) => b.id !== id), sha, `Remove upcoming volume ${id}`);
 }

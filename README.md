@@ -25,6 +25,8 @@ client/   React admin panel + public viewer
 ## Data model
 
 - **Page**: `tractate`, `daf`, `side` (`a`/`b`), `pageImageUrl`, optional natural image dimensions.
+- **UpcomingBook**: a volume announced on the shelf before any of its dapim exist — `tractate`,
+  optional `note`, `sortOrder`. It renders faded, unclickable, and banded "בקרוב".
 - **Video**: a standalone educational video shown on the `/videos` rail — `title`, optional `description`,
   `url` (YouTube/Vimeo), `sortOrder`. Unlike a region's video, it isn't attached to any daf.
 - **Region** (belongs to a page): `shape` (`rectangle` | `polygon`), `coordinates` stored as
@@ -91,6 +93,14 @@ included — see below), see [Deploying to GitHub Pages](#deploying-to-github-pa
 3. **Save regions** sends the full region list to the backend as JSON, with coordinates normalized
    to percentages of the original image dimensions.
 
+## Daf numbering
+
+Daf numbers are stored as integers because they have to sort, but a Gemara is never *said* in
+digits — daf 54 is נ״ד. `utils/gematria.ts` converts on the way out, with the usual typographic
+marks (geresh on a single letter, gershayim before the last of several) and the conventional
+ט״ו / ט״ז rather than the spellings of the Divine Name. `formatDaf()` composes that with the amud
+(ע״א / ע״ב). Admin forms still take a plain number, since that's what's sensible to type.
+
 ## Interface language
 
 The UI is Hebrew throughout, with `<html lang="he" dir="rtl">`. A few things follow from that and
@@ -119,6 +129,30 @@ fetched from Vimeo's public oEmbed endpoint — no API key, and it sends `Access
 so the browser calls it directly with no backend involved. Results are cached per video for the life
 of the page, and anything that can't be resolved (a private video, a host we don't recognise, a
 network failure) falls back to the site mark rather than an empty frame.
+
+## Turning a daf
+
+A Gemara leaf carries amud א on its front and amud ב on its back, and `DafTurner` models exactly
+that: the turning element is a genuine two-sided leaf — outgoing daf printed on the front, incoming
+on the back — swinging a full 180° about the right-hand binding, which is where a Hebrew volume is
+bound. Past 90° the back face comes into view and lands on the copy already sitting underneath, so
+the turn resolves seamlessly instead of cutting.
+
+Depth comes from three things working together: the leaf lifts off the spine (`translateZ`) at the
+midpoint so it arcs rather than wiping flat; a sheen sweeps each face as it passes through the
+vertical; and the raised leaf throws a shadow across the page beneath it that retracts as it lands.
+Neighbouring daf images are preloaded so a turn never reveals a blank.
+
+## The bookcase
+
+`/` groups the published dapim by tractate and stands them as bound volumes in a recessed case —
+back panel, lit front plank, and light spilling from the front of the shelf. Bindings and heights
+come from a stable hash of the tractate name, so a given volume always looks the same. Clicking one
+opens it at its first published daf.
+
+Volumes managed at `/admin/upcoming` stand alongside them, faded and banded "בקרוב", to show what's
+coming. They're rendered as plain `<div>`s rather than buttons, so they aren't focusable or
+clickable — the styling and the semantics agree that there's nothing to open yet.
 
 ## Public viewer
 

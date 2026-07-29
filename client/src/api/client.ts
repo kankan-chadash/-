@@ -10,7 +10,15 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
+import type {
+  Page,
+  PageWithRegions,
+  Region,
+  UpcomingBook,
+  UpcomingBookInput,
+  Video,
+  VideoInput,
+} from '../types';
 
 export class ApiError extends Error {
   status: number;
@@ -65,6 +73,10 @@ export function fetchPageByRef(tractate: string, daf: number, side: string): Pro
 
 export function fetchVideos(): Promise<Video[]> {
   return request('/api/videos');
+}
+
+export function fetchUpcomingBooks(): Promise<UpcomingBook[]> {
+  return request('/api/upcoming');
 }
 
 // --- Auth ---
@@ -141,4 +153,22 @@ export function updateVideo(id: string, input: Partial<VideoInput>): Promise<Vid
 
 export function deleteVideo(id: string): Promise<void> {
   return request(`/api/admin/videos/${id}`, { method: 'DELETE' });
+}
+
+// --- Admin: upcoming volumes ---
+
+export function fetchAdminUpcomingBooks(): Promise<UpcomingBook[]> {
+  return request('/api/admin/upcoming');
+}
+
+export function createUpcomingBook(input: UpcomingBookInput): Promise<UpcomingBook> {
+  return request('/api/admin/upcoming', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export function updateUpcomingBook(id: string, input: Partial<UpcomingBookInput>): Promise<UpcomingBook> {
+  return request(`/api/admin/upcoming/${id}`, { method: 'PUT', body: JSON.stringify(input) });
+}
+
+export function deleteUpcomingBook(id: string): Promise<void> {
+  return request(`/api/admin/upcoming/${id}`, { method: 'DELETE' });
 }

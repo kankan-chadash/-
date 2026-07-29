@@ -14,7 +14,15 @@ import { useMemo } from 'react';
 import * as expressApi from './client';
 import * as githubApi from './githubAdminClient';
 import type { CreatePageInput } from './client';
-import type { Page, PageWithRegions, Region, Video, VideoInput } from '../types';
+import type {
+  Page,
+  PageWithRegions,
+  Region,
+  UpcomingBook,
+  UpcomingBookInput,
+  Video,
+  VideoInput,
+} from '../types';
 import { useGithubAdminAuth } from '../context/GithubAdminAuthContext';
 
 export const isGithubAdminMode = import.meta.env.VITE_ADMIN_MODE === 'github';
@@ -31,6 +39,10 @@ export interface AdminApi {
   createVideo: (input: VideoInput) => Promise<Video>;
   updateVideo: (id: string, input: Partial<VideoInput>) => Promise<Video>;
   deleteVideo: (id: string) => Promise<void>;
+  fetchAdminUpcomingBooks: () => Promise<UpcomingBook[]>;
+  createUpcomingBook: (input: UpcomingBookInput) => Promise<UpcomingBook>;
+  updateUpcomingBook: (id: string, input: Partial<UpcomingBookInput>) => Promise<UpcomingBook>;
+  deleteUpcomingBook: (id: string) => Promise<void>;
 }
 
 /**
@@ -60,6 +72,10 @@ export function useAdminApi(): AdminApi {
         createVideo: notSignedIn,
         updateVideo: notSignedIn,
         deleteVideo: notSignedIn,
+        fetchAdminUpcomingBooks: notSignedIn,
+        createUpcomingBook: notSignedIn,
+        updateUpcomingBook: notSignedIn,
+        deleteUpcomingBook: notSignedIn,
       };
     }
 
@@ -75,6 +91,10 @@ export function useAdminApi(): AdminApi {
       createVideo: (input) => githubApi.createVideo(token, input),
       updateVideo: (id, input) => githubApi.updateVideo(token, id, input),
       deleteVideo: (id) => githubApi.deleteVideo(token, id),
+      fetchAdminUpcomingBooks: () => githubApi.fetchAdminUpcomingBooks(token),
+      createUpcomingBook: (input) => githubApi.createUpcomingBook(token, input),
+      updateUpcomingBook: (id, input) => githubApi.updateUpcomingBook(token, id, input),
+      deleteUpcomingBook: (id) => githubApi.deleteUpcomingBook(token, id),
     };
   }, [githubAuth.token]);
 }

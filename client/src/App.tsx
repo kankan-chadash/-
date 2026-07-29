@@ -21,6 +21,7 @@ import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminPageEditor } from './pages/admin/AdminPageEditor';
 import { AdminVideos } from './pages/admin/AdminVideos';
+import { AdminUpcoming } from './pages/admin/AdminUpcoming';
 
 export default function App() {
   return (
@@ -53,6 +54,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <AdminVideos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/upcoming"
+              element={
+                <ProtectedRoute>
+                  <AdminUpcoming />
                 </ProtectedRoute>
               }
             />
