@@ -7,7 +7,7 @@
   "imageWidth": 1788,
   "imageHeight": 2758,
   "createdAt": "2026-07-29T10:04:20.936Z",
-  "updatedAt": "2026-07-29T14:52:47.435Z",
+  "updatedAt": "2026-07-29T14:58:32.169Z",
   "regions": [
     {
       "id": "3137ac68-3756-46ad-a40b-1ae1b332de9d",
@@ -21,8 +21,8 @@
       "contentType": "video",
       "content": "https://vimeo.com/1211656238?fl=ip&fe=ec",
       "title": "סיכום המשנה",
-      "badgeX": 66.12099568025319,
-      "badgeY": 9.165742409538334
+      "badgeX": 53.29701467003122,
+      "badgeY": 16.799182032441426
     },
     {
       "id": "bfaf401d-7fea-4a3b-8bef-ad534e503039",
@@ -60,8 +60,8 @@
       "contentType": "image",
       "content": "https://lh3.googleusercontent.com/pw/AP1GczPwcQrimKWxcFi1vOS-a3a-8LqGB86_eNjgiGCIEcRt2cajC2484wDrf7FQvslwdjiIsyX5zv5H6BosT2x3XvGwHTYNHIqOlNL1-N5F4yN3tXdZm5sWIE9pBeEoB7T7xUgiCPRApl40DPaEBvLdogb8=w1408-h768-s-no-gm?authuser=0",
       "title": "תמונת אווירה",
-      "badgeX": 52.37960309653137,
-      "badgeY": 28.003604602800497
+      "badgeX": 64.52407938069372,
+      "badgeY": 26.647372799112713
     }
   ]
 }
