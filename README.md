@@ -220,6 +220,34 @@ hotspot in full, tinted and dashed by type — off by default so the daf isn't c
 remembered in `localStorage` once chosen, since a reader who wants the map shouldn't have to
 re-enable it on every daf. A legend above the page says what the colours mean.
 
+### Browsing a daf by type
+
+The legend isn't only a key — each entry is a button carrying that type's count on this daf, and
+choosing one opens a floating list of every region of that kind: all the videos under **סרטון**,
+all the images under **תמונה**, all the explanations under **הסבר**.
+
+This answers a question the badges can't. They say *where* things are but not *what* they are, so
+"which videos are on this daf?" otherwise means hunting the page for teal squares and opening each
+one. The list gives titles up front — plus a one-line preview of the text for explanations, since
+their titles are often absent or terse.
+
+Each row does two different things, which is why it's two buttons:
+
+- The row itself **locates** the region: the panel closes, the daf scrolls the region into view,
+  and the region and its badge pulse for a moment so the eye catches them. This is the request the
+  panel exists for — showing the reader the spot the item was taken from — so it's the larger,
+  default target.
+- **"צפייה"** skips the page and opens the content outright, for a reader who wants the video, not
+  its location.
+
+The flag is a timed class rather than a persistent state (`LOCATE_FLAG_MS`), so nothing has to be
+dismissed; the pulse fades on its own. Locating uses `data-region-id` (falling back to
+`data-badge-region-id`, since a badge may be dragged far from a small region), and the pulse is
+suppressed under `prefers-reduced-motion` — the outline still appears, it just doesn't throb.
+
+A type with nothing on the daf renders as a disabled chip showing `0`: still a legend entry
+explaining the colour, but plainly not a way in.
+
 ### Placing a badge
 
 By default a badge sits at the region's reading-order corner (its right edge, since the page is

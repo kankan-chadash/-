@@ -34,6 +34,7 @@ export function ViewerPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeRegion, setActiveRegion] = useState<Region | null>(null);
   const [showAllRegions, setShowAllRegions] = useState(readShowAllPreference);
+  const [locatedRegionId, setLocatedRegionId] = useState<string | null>(null);
 
   // Which way the next daf change should turn. Set by whatever triggered the
   // navigation (button, key, swipe) just before the URL changes.
@@ -108,6 +109,22 @@ export function ViewerPage() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [goTo, siblings.next, siblings.prev, activeRegion]);
 
+  // Walk the reader from a list entry back to the spot on the daf it came from:
+  // scroll it into view, then flag it just long enough to catch the eye.
+  const locateRegion = useCallback((region: Region) => {
+    setLocatedRegionId(region.id);
+    const target =
+      document.querySelector(`[data-region-id="${region.id}"]`) ??
+      document.querySelector(`[data-badge-region-id="${region.id}"]`);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
+
+  useEffect(() => {
+    if (!locatedRegionId) return;
+    const timer = setTimeout(() => setLocatedRegionId(null), LOCATE_FLAG_MS);
+    return () => clearTimeout(timer);
+  }, [locatedRegionId]);
+
   const swipe = useSwipe({
     // RTL: dragging the page rightwards pulls the next daf in from the left.
     onSwipeLeft: () => goTo(siblings.prev, 'prev'),
@@ -156,12 +173,14 @@ export function ViewerPage() {
 
         {page && (
           <RegionLegend
+            regions={page.regions}
             showAll={showAllRegions}
             onToggleShowAll={(next) => {
               setShowAllRegions(next);
               writeShowAllPreference(next);
             }}
-            regionCount={page.regions.length}
+            onLocateRegion={locateRegion}
+            onOpenRegion={setActiveRegion}
           />
         )}
 
@@ -192,6 +211,7 @@ export function ViewerPage() {
               onSelectRegion={setActiveRegion}
               activeRegionId={activeRegion?.id}
               showAll={showAllRegions}
+              locatedRegionId={locatedRegionId}
             />
           </DafTurner>
         ) : (
@@ -272,6 +292,9 @@ function TurnButton({
 // remembered once made — a reader who wants the map shouldn't re-enable it on
 // every daf.
 const SHOW_ALL_KEY = 'gemara_show_all_regions';
+
+/** Long enough to notice the flagged region, short enough not to nag. */
+const LOCATE_FLAG_MS = 2600;
 
 function readShowAllPreference(): boolean {
   try {
