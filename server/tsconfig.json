@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    // node16 rather than the older "commonjs"/"node" pair: that resolution mode
+    // is deprecated from TypeScript 6 and slated for removal in 7, and this repo
+    // is already mid-migration (the client builds on 6.x). package.json still
+    // says "type": "commonjs", so files are treated as CommonJS and the emit is
+    // unchanged — this only modernises how modules are *resolved*.
+    "module": "node16",
+    "moduleResolution": "node16",
     "lib": ["ES2022"],
     "outDir": "dist",
     "rootDir": "src",
