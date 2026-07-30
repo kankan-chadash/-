@@ -152,13 +152,33 @@ Notes on it:
 The header logo is a separate thing and is left alone — it sits on the site's own parchment plate,
 where the white background was never a problem.
 
-## Videos rail
+## Videos rails
 
-`/videos` shows standalone educational videos as plaques hanging from an aged wooden beam, scrolled
+`/videos` shows standalone educational videos as plaques hanging from aged wooden beams, scrolled
 horizontally with snap points. Manage them at `/admin/videos` (linked from the admin dashboard):
 add, edit, reorder, delete. In `github` admin mode each change commits `client/public/data/videos.json`;
 in `express` mode they're rows in the `videos` table, exported to that same JSON by
 `npm run export:static`.
+
+### Two rails
+
+There are two beams, one above the other — **סרטונים כלליים** and, below it, **פרשת שבוע** — split by
+a `category` on the video (`'general' | 'parasha'`).
+
+`category` is **optional and was never backfilled**: `videoCategory()` reads anything missing or
+unrecognised as `'general'`, so every video that existed before the parasha rail shipped simply
+stayed where it was. The SQLite column is nullable for the same reason, and the mapper normalises on
+the way out, so nothing downstream ever sees an absent category. (SQLite can't add a `CHECK`
+constraint by `ALTER TABLE`, so on existing databases the allowed values are policed by the Zod
+schema rather than the column.)
+
+Both rails are shown even when one is empty. A named empty beam says what belongs there and that
+more is coming; hiding it would just make the site look like it has less.
+
+In the admin the list is grouped rail by rail, because the up/down arrows only mean anything against
+the order you can actually see on the site. An arrow moves a video past **its own** neighbours: the
+swap happens within the rail, then every rail is flattened back into one list and that whole order
+is written — one commit, and the other rail keeps its order.
 
 Posters: YouTube encodes one in the video id, so it's derived synchronously. Vimeo doesn't, so it's
 fetched from Vimeo's public oEmbed endpoint — no API key, and it sends `Access-Control-Allow-Origin: *`,

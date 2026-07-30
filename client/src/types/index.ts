@@ -63,12 +63,21 @@ export interface PageWithRegions extends Page {
   regions: Region[];
 }
 
-/** A standalone educational video, shown on the videos rail — not tied to any daf. */
+/** Which rail a video hangs on. */
+export type VideoCategory = 'general' | 'parasha';
+
+/** A standalone educational video, shown on the videos rails — not tied to any daf. */
 export interface Video {
   id: string;
   title: string;
   description: string | null;
   url: string;
+  /**
+   * Absent on videos saved before the parasha rail existed, which is why it's
+   * optional rather than backfilled — read it through `videoCategory()`, which
+   * treats anything missing or unrecognised as 'general'.
+   */
+  category?: VideoCategory | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -78,6 +87,7 @@ export interface VideoInput {
   title: string;
   description?: string | null;
   url: string;
+  category?: VideoCategory;
   sortOrder?: number;
 }
 

@@ -1415,3 +1415,10 @@ polygon.hotspot-region.is-located {
     animation: none;
   }
 }
+
+/* A rail's name, ruled off on both sides like a chapter heading in a sefer. */
+.rail-heading-rule {
+  height: 1px;
+  flex: 1 1 0;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.45), transparent);
+}

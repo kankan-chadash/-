@@ -43,7 +43,7 @@ adminVideosRouter.post('/videos', (req, res) => {
     res.status(400).json({ error: parsed.error.flatten() });
     return;
   }
-  const { title, description, url, sortOrder } = parsed.data;
+  const { title, description, url, category, sortOrder } = parsed.data;
   const id = uuid();
   // Default to the end of the rail so a new video doesn't jump the queue.
   const nextOrder =
@@ -51,8 +51,8 @@ adminVideosRouter.post('/videos', (req, res) => {
     ((db.prepare('SELECT MAX(sort_order) AS max FROM videos').get() as { max: number | null }).max ?? -1) + 1;
 
   db.prepare(
-    'INSERT INTO videos (id, title, description, url, sort_order) VALUES (?, ?, ?, ?, ?)'
-  ).run(id, title, description ?? null, url, nextOrder);
+    'INSERT INTO videos (id, title, description, url, category, sort_order) VALUES (?, ?, ?, ?, ?, ?)'
+  ).run(id, title, description ?? null, url, category ?? 'general', nextOrder);
 
   res.status(201).json(mapVideoRow(db.prepare('SELECT * FROM videos WHERE id = ?').get(id) as VideoRow));
 });
@@ -68,15 +68,16 @@ adminVideosRouter.put('/videos/:id', (req, res) => {
     res.status(404).json({ error: 'Video not found' });
     return;
   }
-  const { title, description, url, sortOrder } = parsed.data;
+  const { title, description, url, category, sortOrder } = parsed.data;
   db.prepare(
     `UPDATE videos
-     SET title = ?, description = ?, url = ?, sort_order = ?, updated_at = datetime('now')
+     SET title = ?, description = ?, url = ?, category = ?, sort_order = ?, updated_at = datetime('now')
      WHERE id = ?`
   ).run(
     title ?? existing.title,
     description !== undefined ? description : existing.description,
     url ?? existing.url,
+    category ?? existing.category ?? 'general',
     sortOrder ?? existing.sort_order,
     req.params.id
   );
