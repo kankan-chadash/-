@@ -40,3 +40,9 @@ function addColumnIfMissing(table: string, column: string, definition: string): 
 // Manual badge placement, added after regions shipped.
 addColumnIfMissing('regions', 'badge_x', 'REAL');
 addColumnIfMissing('regions', 'badge_y', 'REAL');
+
+// The parasha rail, added after the videos rail shipped. Left nullable rather
+// than defaulted: an absent category already means "general" everywhere it's
+// read, so existing rows need no backfill. (A CHECK constraint can't be added
+// by ALTER TABLE in SQLite, so the values are policed by validation instead.)
+addColumnIfMissing('videos', 'category', 'TEXT');

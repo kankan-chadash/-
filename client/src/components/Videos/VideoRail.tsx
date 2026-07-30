@@ -221,7 +221,13 @@ function RailArrow({
       disabled={disabled}
       aria-label={side === 'start' ? 'הקודם' : 'הבא'}
       className={`absolute top-1/2 z-30 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-gold/50 bg-wood-dark/90 text-gold shadow-lg backdrop-blur transition hover:bg-wood disabled:pointer-events-none disabled:opacity-0 ${
-        side === 'start' ? 'start-0 -translate-x-1/2 rtl:translate-x-1/2' : 'end-0 translate-x-1/2 rtl:-translate-x-1/2'
+        // The arrow overhangs the rail's edge from `sm` up, where there's room
+        // for it. On a phone the rail already reaches the edge of the screen, so
+        // overhanging pushed half a button off-screen and gave the page a few
+        // pixels of sideways scroll — there it sits flush inside instead.
+        side === 'start'
+          ? 'start-0 sm:-translate-x-1/2 sm:rtl:translate-x-1/2'
+          : 'end-0 sm:translate-x-1/2 sm:rtl:-translate-x-1/2'
       }`}
     >
       <Chevron toward={side} className="h-6 w-6" />

@@ -10,14 +10,20 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import type { Video } from '../../types';
+import type { Video, VideoCategory } from '../../types';
 import { useAdminApi } from '../../api/adminData';
 import { PublishNote } from '../../components/Admin/PublishNote';
 import { useThumbnail } from '../../hooks/useThumbnail';
 import { routes } from '../../routes';
+import {
+  VIDEO_CATEGORIES,
+  VIDEO_CATEGORY_LABELS,
+  byCategory,
+  videoCategory,
+} from '../../utils/videoCategories';
 
 export function AdminVideos() {
   const api = useAdminApi();
@@ -30,6 +36,9 @@ export function AdminVideos() {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<VideoCategory>('general');
+
+  const rails = useMemo(() => byCategory(videos), [videos]);
 
   function load() {
     api.fetchAdminVideos().then(setVideos).catch((err) => setError(err.message));
@@ -43,6 +52,7 @@ export function AdminVideos() {
     setTitle('');
     setUrl('');
     setDescription('');
+    setCategory('general');
   }
 
   function startEditing(video: Video) {
@@ -50,6 +60,7 @@ export function AdminVideos() {
     setTitle(video.title);
     setUrl(video.url);
     setDescription(video.description ?? '');
+    setCategory(videoCategory(video));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -57,7 +68,7 @@ export function AdminVideos() {
     e.preventDefault();
     setError(null);
     setBusy(true);
-    const input = { title, url, description: description.trim() || null };
+    const input = { title, url, description: description.trim() || null, category };
     const wasEditing = editing;
     try {
       // Show the change on the rail list at once; the commit follows.
@@ -95,7 +106,7 @@ export function AdminVideos() {
   }
 
   /**
-   * Moves a video one slot along the rail.
+   * Moves a video one slot along its own rail.
    *
    * The list reorders on the spot and the whole new order goes up as a single
    * write, so a run of moves is a run of instant reorderings rather than a
@@ -103,13 +114,19 @@ export function AdminVideos() {
    * two, which means one deploy.
    */
   async function move(video: Video, delta: number) {
-    const from = videos.findIndex((v) => v.id === video.id);
+    const rail = rails[videoCategory(video)];
+    const from = rail.indexOf(video);
     const to = from + delta;
-    if (to < 0 || to >= videos.length) return;
+    if (from < 0 || to < 0 || to >= rail.length) return;
+
+    // Swap within the rail, then flatten every rail back into one list: the
+    // arrows move a video past its own neighbours, not past the other rail's.
+    const swapped = [...rail];
+    [swapped[from], swapped[to]] = [swapped[to], swapped[from]];
+    const reordered = { ...rails, [videoCategory(video)]: swapped };
+    const next = VIDEO_CATEGORIES.flatMap((c) => reordered[c]);
 
     const before = videos;
-    const next = [...videos];
-    [next[from], next[to]] = [next[to], next[from]];
     setVideos(next);
     setError(null);
 
@@ -162,6 +179,32 @@ export function AdminVideos() {
               />
             </label>
 
+            <fieldset className="block">
+              <legend className="text-sm text-ink-variant">מסילה</legend>
+              <div className="mt-1 flex gap-2">
+                {VIDEO_CATEGORIES.map((option) => (
+                  <label
+                    key={option}
+                    className={`flex-1 cursor-pointer rounded border px-3 py-2 text-center text-sm transition ${
+                      category === option
+                        ? 'border-wood-dark bg-wood-dark font-semibold text-gold'
+                        : 'border-outline bg-white text-ink-variant hover:border-wood-dark/50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="category"
+                      value={option}
+                      checked={category === option}
+                      onChange={() => setCategory(option)}
+                      className="sr-only"
+                    />
+                    {VIDEO_CATEGORY_LABELS[option]}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             <label className="block">
               <span className="text-sm text-ink-variant">תיאור (רשות)</span>
               <textarea
@@ -199,51 +242,64 @@ export function AdminVideos() {
 
         <section className="rounded border-t-4 border-gold bg-parchment p-6 shadow-lg">
           <h2 className="mb-4 font-serif text-xl text-wood-dark">
-            הסרטונים במסילה ({videos.length})
+            הסרטונים במסילות ({videos.length})
           </h2>
-          {videos.length === 0 && <p className="text-sm text-ink-variant">עדיין אין סרטונים.</p>}
-          <ul className="divide-y divide-outline/40">
-            {videos.map((video, i) => {
-              return (
-                <li key={video.id} className="flex items-center gap-3 py-3">
-                  <VideoThumb url={video.url} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-ink">{video.title}</p>
-                    <p className="truncate text-xs text-ink-variant" dir="ltr">
-                      {video.url}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-1 text-sm">
-                    <button
-                      onClick={() => move(video, -1)}
-                      disabled={i === 0}
-                      aria-label="הזזה אחורה"
-                      className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
-                    >
-                      ↑
-                    </button>
-                    <button
-                      onClick={() => move(video, 1)}
-                      disabled={i === videos.length - 1}
-                      aria-label="הזזה קדימה"
-                      className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
-                    >
-                      ↓
-                    </button>
-                    <button
-                      onClick={() => startEditing(video)}
-                      className="font-semibold text-wood-dark hover:underline"
-                    >
-                      עריכה
-                    </button>
-                    <button onClick={() => handleDelete(video)} className="text-red-600 hover:underline">
-                      מחיקה
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+
+          {/* Listed rail by rail, matching the page: the up/down arrows only make
+              sense against the order you can actually see on the site. */}
+          {VIDEO_CATEGORIES.map((category) => {
+            const rail = rails[category];
+            return (
+              <div key={category} className="mb-6 last:mb-0">
+                <h3 className="mb-2 border-b border-outline/50 pb-1 text-sm font-semibold text-wood-dark">
+                  {VIDEO_CATEGORY_LABELS[category]} ({rail.length})
+                </h3>
+                {rail.length === 0 && (
+                  <p className="py-2 text-sm text-ink-variant">אין עדיין סרטונים במסילה הזו.</p>
+                )}
+                <ul className="divide-y divide-outline/40">
+                  {rail.map((video, i) => (
+                    <li key={video.id} className="flex items-center gap-3 py-3">
+                      <VideoThumb url={video.url} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-ink">{video.title}</p>
+                        <p className="truncate text-xs text-ink-variant" dir="ltr">
+                          {video.url}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1 text-sm">
+                        <button
+                          onClick={() => move(video, -1)}
+                          disabled={i === 0}
+                          aria-label="הזזה אחורה"
+                          className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          onClick={() => move(video, 1)}
+                          disabled={i === rail.length - 1}
+                          aria-label="הזזה קדימה"
+                          className="rounded px-2 py-1 text-ink-variant hover:bg-black/5 disabled:opacity-30"
+                        >
+                          ↓
+                        </button>
+                        <button
+                          onClick={() => startEditing(video)}
+                          className="font-semibold text-wood-dark hover:underline"
+                        >
+                          עריכה
+                        </button>
+                        <button onClick={() => handleDelete(video)} className="text-red-600 hover:underline">
+                          מחיקה
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </section>
       </main>
     </div>

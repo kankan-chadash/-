@@ -10,17 +10,25 @@
  *
  * Unauthorized copying of this file, via any medium, is strictly prohibited.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import * as api from '../api/publicData';
 import type { Video } from '../types';
 import { SiteHeader } from '../components/Layout/SiteHeader';
 import { VideoRail } from '../components/Videos/VideoRail';
 import { VideoModal } from '../components/Videos/VideoModal';
+import {
+  VIDEO_CATEGORIES,
+  VIDEO_CATEGORY_EMPTY,
+  VIDEO_CATEGORY_LABELS,
+  byCategory,
+} from '../utils/videoCategories';
 
 export function VideosPage() {
   const [videos, setVideos] = useState<Video[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState<Video | null>(null);
+
+  const rails = useMemo(() => (videos ? byCategory(videos) : null), [videos]);
 
   useEffect(() => {
     api
@@ -37,7 +45,7 @@ export function VideosPage() {
         <div className="mb-10 text-center">
           <h1 className="font-serif text-4xl text-parchment sm:text-5xl">סרטונים חינוכיים</h1>
           <p className="mx-auto mt-3 max-w-xl text-parchment/70">
-            מסילת הסרטונים — בחרו סרטון כדי לצפות בו.
+            שתי מסילות: סרטונים כלליים, ולמטה סרטונים על פרשת השבוע. בחרו סרטון כדי לצפות בו.
           </p>
         </div>
 
@@ -49,13 +57,30 @@ export function VideosPage() {
 
         {!videos && !error && <RailSkeleton />}
 
-        {videos && videos.length === 0 && (
-          <p className="rounded border border-gold/30 bg-black/20 p-10 text-center text-parchment/80">
-            המסילה עדיין ריקה — לא הועלו סרטונים חינוכיים.
-          </p>
-        )}
+        {/* One rail per kind, hung one above the other. Both are shown even when
+            empty: a named empty shelf says what belongs there and that more is
+            coming, where a missing one would just look like the site has less. */}
+        {rails &&
+          VIDEO_CATEGORIES.map((category) => {
+            const rail = rails[category];
+            return (
+              <section key={category} className="mb-14 last:mb-0">
+                <h2 className="mb-5 flex items-center gap-3 font-serif text-2xl text-parchment">
+                  <span className="rail-heading-rule" aria-hidden />
+                  {VIDEO_CATEGORY_LABELS[category]}
+                  <span className="rail-heading-rule" aria-hidden />
+                </h2>
 
-        {videos && videos.length > 0 && <VideoRail videos={videos} onSelect={setPlaying} />}
+                {rail.length > 0 ? (
+                  <VideoRail videos={rail} onSelect={setPlaying} />
+                ) : (
+                  <p className="rounded border border-gold/25 bg-black/20 p-8 text-center text-parchment/70">
+                    {VIDEO_CATEGORY_EMPTY[category]}
+                  </p>
+                )}
+              </section>
+            );
+          })}
       </main>
 
       {playing && <VideoModal video={playing} onClose={() => setPlaying(null)} />}

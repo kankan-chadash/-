@@ -41,6 +41,9 @@ CREATE TABLE IF NOT EXISTS videos (
   title TEXT NOT NULL,
   description TEXT,
   url TEXT NOT NULL,
+  -- Which rail the video hangs on. Nullable, and read as 'general' when absent,
+  -- so rows written before the parasha rail existed need no backfill.
+  category TEXT CHECK (category IN ('general', 'parasha')),
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))

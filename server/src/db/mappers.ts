@@ -58,6 +58,8 @@ export function mapVideoRow(row: VideoRow): Video {
     title: row.title,
     description: row.description,
     url: row.url,
+    // Anything unset or unrecognised belongs on the general rail.
+    category: row.category === 'parasha' ? 'parasha' : 'general',
     sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,

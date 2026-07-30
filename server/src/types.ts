@@ -93,6 +93,8 @@ export interface Video {
   title: string;
   description: string | null;
   url: string;
+  /** Which rail it hangs on. Always set on the way out, even for older rows. */
+  category: 'general' | 'parasha';
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -103,6 +105,8 @@ export interface VideoRow {
   title: string;
   description: string | null;
   url: string;
+  /** Null on rows written before the parasha rail existed; read as 'general'. */
+  category: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

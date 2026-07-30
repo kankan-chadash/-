@@ -181,6 +181,7 @@ export async function createVideo(token: string, input: VideoInput): Promise<Vid
         title: input.title,
         description: input.description ?? null,
         url: input.url,
+        category: input.category ?? 'general',
         // Append to the end of the rail unless a position was given.
         sortOrder: input.sortOrder ?? videos.reduce((max, v) => Math.max(max, v.sortOrder), -1) + 1,
         createdAt: now,
@@ -210,6 +211,7 @@ export async function updateVideo(token: string, id: string, input: Partial<Vide
         title: input.title ?? existing.title,
         description: input.description !== undefined ? input.description : existing.description,
         url: input.url ?? existing.url,
+        category: input.category ?? existing.category ?? 'general',
         sortOrder: input.sortOrder ?? existing.sortOrder,
         updatedAt,
       };
